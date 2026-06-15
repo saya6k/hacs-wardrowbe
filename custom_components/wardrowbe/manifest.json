@@ -4,10 +4,10 @@
   "codeowners": ["@saya6k"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/saya6k/ha_wardrowbe",
+  "documentation": "https://github.com/saya6k/ha-wardrowbe",
   "integration_type": "service",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/saya6k/ha_wardrowbe/issues",
+  "issue_tracker": "https://github.com/saya6k/ha-wardrowbe/issues",
   "loggers": ["custom_components.wardrowbe"],
   "requirements": [],
   "version": "0.1.0"
