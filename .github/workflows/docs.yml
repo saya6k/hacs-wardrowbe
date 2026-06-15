@@ -1,17 +1,18 @@
 name: Docs
 
+# Runs only after the Validate workflow succeeds on main (or manual dispatch).
+# yamllint disable-line rule:truthy
 on:
-  workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ["Validate"]
+    types: [completed]
     branches: [main]
-    paths:
-      - '.github/workflows/docs.yml'
-      - 'zensical.*.toml'
-      - 'docs/**'
+  workflow_dispatch:
 
 jobs:
   docs:
     name: Build & deploy
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

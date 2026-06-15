@@ -1,8 +1,11 @@
 name: Release
 
+# Runs only after the Validate workflow succeeds on main (or manual dispatch).
 # yamllint disable-line rule:truthy
 on:
-  push:
+  workflow_run:
+    workflows: ["Validate"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -18,6 +21,7 @@ concurrency:
 jobs:
   release-please:
     name: release-please
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v5
