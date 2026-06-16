@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.1...wardrowbe-v0.1.2) (2026-06-16)
+
+
+### Bug Fixes
+
+* **manifest:** point documentation at the published docs site ([bada3b9](https://github.com/saya6k/ha-wardrowbe/commit/bada3b9c1683fc34275bdad116ec4f63a5db7c11))
+
+
+### CI
+
+* pass a PAT to release-please so the release PR runs CI ([#2](https://github.com/saya6k/ha-wardrowbe/issues/2)) ([b5a7dc6](https://github.com/saya6k/ha-wardrowbe/commit/b5a7dc6eca6849e826dfd89e257ebe321ac05c3e))
+
 ## [0.1.1](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.0...wardrowbe-v0.1.1) (2026-06-15)
 
 
