@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.2...wardrowbe-v0.1.3) (2026-06-24)
+
+
+### Bug Fixes
+
+* **oauth2:** add error logging and defensive handling to PKCE token exchange ([3c8bf71](https://github.com/saya6k/ha-wardrowbe/commit/3c8bf71b2ca6168b15249659d3c269a14c42cdb0))
+* **services:** guard stale config entry errors from reaching aiohttp ([06f62ce](https://github.com/saya6k/ha-wardrowbe/commit/06f62ceb4045e12d232d5c44a7ef11d58e532ec9))
+
 ## [0.1.2](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.1...wardrowbe-v0.1.2) (2026-06-16)
 
 
