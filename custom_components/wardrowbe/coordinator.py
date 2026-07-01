@@ -43,6 +43,7 @@ class WardrowbeData:
     notifications: list[dict[str, Any]] = field(default_factory=list)
     items_to_wash: list[dict[str, Any]] = field(default_factory=list)
     pending_events: list[PendingEvent] = field(default_factory=list)
+    capabilities: dict[str, Any] | None = None
 
 
 class WardrowbeCoordinator(DataUpdateCoordinator[WardrowbeData]):
@@ -86,6 +87,10 @@ class WardrowbeCoordinator(DataUpdateCoordinator[WardrowbeData]):
         except WardrowbeApiError as err:
             raise UpdateFailed(str(err)) from err
 
+        # Public, unauthenticated, and non-fatal — returns None on older
+        # servers or transport errors, so it never fails the whole update.
+        capabilities = await self.client.async_capabilities()
+
         events = self._diff(outfits, notifications, items_to_wash)
         for ev in events:
             self.hass.bus.async_fire(
@@ -100,6 +105,7 @@ class WardrowbeCoordinator(DataUpdateCoordinator[WardrowbeData]):
             notifications=notifications,
             items_to_wash=items_to_wash,
             pending_events=events,
+            capabilities=capabilities,
         )
 
     @callback

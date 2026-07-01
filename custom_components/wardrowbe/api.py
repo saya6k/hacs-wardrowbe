@@ -27,6 +27,7 @@ from .const import (
     API_AUTH_CONFIG,
     API_AUTH_SESSION,
     API_AUTH_SYNC,
+    API_CAPABILITIES,
     API_HEALTH,
     API_ITEMS,
     API_NOTIFICATIONS_HISTORY,
@@ -43,7 +44,16 @@ _DEFAULT_JWT_TTL_SECONDS = 6 * 24 * 3600  # 6 days; Wardrowbe defaults to 7
 
 
 class WardrowbeApiError(Exception):
-    """Generic Wardrowbe API error."""
+    """Generic Wardrowbe API error.
+
+    ``status`` carries the HTTP status code when the error originates from a
+    non-2xx response, so callers can react to specific codes (e.g. a 503 from
+    ``/outfits/suggest`` when the server has internal AI disabled).
+    """
+
+    def __init__(self, message: str, *, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
 
 
 class WardrowbeAuthError(WardrowbeApiError):
@@ -176,6 +186,26 @@ class WardrowbeClient:
                 return resp.status == 200
         except aiohttp.ClientError:
             return False
+
+    async def async_capabilities(self) -> dict[str, Any] | None:
+        """Fetch the server's effective AI capabilities (public, no auth).
+
+        Returns ``None`` on servers predating the endpoint (Wardrowbe < 1.4.0)
+        or on any transport/HTTP error, so callers treat an unknown state as
+        "assume enabled" rather than blocking actions.
+        """
+        try:
+            async with self._session.get(
+                self._url(API_CAPABILITIES),
+                ssl=self._verify_ssl,
+                timeout=aiohttp.ClientTimeout(total=DEFAULT_TIMEOUT),
+            ) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json(content_type=None)
+        except aiohttp.ClientError:
+            return None
+        return data if isinstance(data, dict) else None
 
     async def async_auth_config(self) -> dict[str, Any]:
         async with self._session.get(
@@ -339,7 +369,9 @@ class WardrowbeClient:
             raise WardrowbeAuthError(
                 f"{method} {path} → 401 after re-sync: {last_body}"
             )
-        raise WardrowbeApiError(f"{method} {path} → {last_status}: {last_body}")
+        raise WardrowbeApiError(
+            f"{method} {path} → {last_status}: {last_body}", status=last_status
+        )
 
 
 def _coerce_list(data: Any) -> list[dict[str, Any]]:
