@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.2.0...wardrowbe-v0.2.1) (2026-07-01)
+
+
+### CI
+
+* **release:** create GitHub releases as drafts for manual publish ([#11](https://github.com/saya6k/ha-wardrowbe/issues/11)) ([f7fe6ba](https://github.com/saya6k/ha-wardrowbe/commit/f7fe6ba493cc35b5eac1bc5f1cfcf70a2a43e585))
+
 ## [0.2.0](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.3...wardrowbe-v0.2.0) (2026-07-01)
 
 
