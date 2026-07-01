@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.3.0](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.2.2...wardrowbe-v0.3.0) (2026-07-01)
+
+
+### Features
+
+* **api:** handle Wardrowbe 1.4.0 optional AI via capabilities probe ([#9](https://github.com/saya6k/ha-wardrowbe/issues/9)) ([b8dc1df](https://github.com/saya6k/ha-wardrowbe/commit/b8dc1df2be4a572257a89194ead63feea1f3ed79))
+
+
+### Bug Fixes
+
+* correct repo URLs in manifest (ha-wardrowbe) ([c72cdd9](https://github.com/saya6k/ha-wardrowbe/commit/c72cdd9cb598ff6b7382e9ded3e0b06f4e0c382f))
+* **manifest:** point documentation at the published docs site ([bada3b9](https://github.com/saya6k/ha-wardrowbe/commit/bada3b9c1683fc34275bdad116ec4f63a5db7c11))
+* **oauth2:** add error logging and defensive handling to PKCE token exchange ([3c8bf71](https://github.com/saya6k/ha-wardrowbe/commit/3c8bf71b2ca6168b15249659d3c269a14c42cdb0))
+* resolve hassfest validation errors ([396852c](https://github.com/saya6k/ha-wardrowbe/commit/396852c9d557bcc3eef2472c19b16bcbe601cb5d))
+* **services:** guard stale config entry errors from reaching aiohttp ([06f62ce](https://github.com/saya6k/ha-wardrowbe/commit/06f62ceb4045e12d232d5c44a7ef11d58e532ec9))
+* **services:** throttle repeated stale-entry service warnings ([#10](https://github.com/saya6k/ha-wardrowbe/issues/10)) ([9c28a63](https://github.com/saya6k/ha-wardrowbe/commit/9c28a63132ed9413f38a1ab04c6d7d0dda2bb5f9))
+
+
+### Documentation
+
+* add HACS My Home Assistant badge to README ([#7](https://github.com/saya6k/ha-wardrowbe/issues/7)) ([6be76b2](https://github.com/saya6k/ha-wardrowbe/commit/6be76b25d377836c0a5643dc137e78a7043b426e))
+
+
+### CI
+
+* **docs:** deploy docs only when a release is published ([#14](https://github.com/saya6k/ha-wardrowbe/issues/14)) ([14de214](https://github.com/saya6k/ha-wardrowbe/commit/14de2146bc9ade82aa53c8c37148c2add40ceb1a))
+* gate release and docs workflows on Validate success ([1d013b5](https://github.com/saya6k/ha-wardrowbe/commit/1d013b5bd2fba42c0caeaf031f27f75d368b49e7))
+* orchestrate validate/release/docs as one check suite via reusable workflows ([3762adf](https://github.com/saya6k/ha-wardrowbe/commit/3762adf2920bbbbcfcb2db85e9ecb1117c99e4ff))
+* pass a PAT to release-please so the release PR runs CI ([#2](https://github.com/saya6k/ha-wardrowbe/issues/2)) ([b5a7dc6](https://github.com/saya6k/ha-wardrowbe/commit/b5a7dc6eca6849e826dfd89e257ebe321ac05c3e))
+* **release:** create GitHub releases as drafts for manual publish ([#11](https://github.com/saya6k/ha-wardrowbe/issues/11)) ([f7fe6ba](https://github.com/saya6k/ha-wardrowbe/commit/f7fe6ba493cc35b5eac1bc5f1cfcf70a2a43e585))
+
 ## [0.2.2](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.2.1...wardrowbe-v0.2.2) (2026-07-01)
 
 
