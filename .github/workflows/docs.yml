@@ -1,10 +1,14 @@
 name: Docs
 
-# Reusable: build + deploy the bilingual Zensical site to Pages. Called by
-# ci.yml only when a version is released.
+# Build + deploy the bilingual Zensical site to Pages. Runs only when a GitHub
+# release is published — release-please creates releases as drafts, so a
+# maintainer's manual publish is what deploys the docs. Checkout defaults to
+# the released tag. Also dispatchable for manual re-deploys.
 # yamllint disable-line rule:truthy
 on:
-  workflow_call:
+  release:
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   docs:
