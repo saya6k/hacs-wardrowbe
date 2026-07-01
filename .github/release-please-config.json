@@ -19,6 +19,7 @@
     ".": {
       "package-name": "wardrowbe",
       "changelog-path": "CHANGELOG.md",
+      "draft": true,
       "extra-files": [
         {"type": "json", "path": "custom_components/wardrowbe/manifest.json", "jsonpath": "$.version"}
       ]
