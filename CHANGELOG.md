@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.2.1...wardrowbe-v0.2.2) (2026-07-01)
+
+
+### CI
+
+* **docs:** deploy docs only when a release is published ([#14](https://github.com/saya6k/ha-wardrowbe/issues/14)) ([14de214](https://github.com/saya6k/ha-wardrowbe/commit/14de2146bc9ade82aa53c8c37148c2add40ceb1a))
+
 ## [0.2.1](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.2.0...wardrowbe-v0.2.1) (2026-07-01)
 
 
