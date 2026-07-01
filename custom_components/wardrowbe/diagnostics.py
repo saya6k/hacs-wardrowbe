@@ -30,6 +30,7 @@ async def async_get_config_entry_diagnostics(
         "entry": async_redact_data(dict(entry.data), REDACT_KEYS),
         "options": dict(entry.options),
         "healthy": getattr(data, "healthy", None),
+        "capabilities": getattr(data, "capabilities", None),
         "analytics": getattr(data, "analytics", None),
         "outfits_count": len(getattr(data, "outfits", []) or []),
         "notifications_count": len(getattr(data, "notifications", []) or []),

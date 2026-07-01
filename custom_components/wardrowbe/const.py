@@ -32,6 +32,7 @@ DEFAULT_OIDC_SCOPES: Final = "openid profile email offline_access"
 # API paths
 API_BASE: Final = "/api/v1"
 API_HEALTH: Final = f"{API_BASE}/health"
+API_CAPABILITIES: Final = f"{API_BASE}/capabilities"
 API_AUTH_CONFIG: Final = f"{API_BASE}/auth/config"
 API_AUTH_SYNC: Final = f"{API_BASE}/auth/sync"
 API_AUTH_SESSION: Final = f"{API_BASE}/auth/session"

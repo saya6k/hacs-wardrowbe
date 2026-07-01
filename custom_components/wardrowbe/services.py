@@ -258,9 +258,30 @@ def _resolve_latest_pending_outfit(hass: HomeAssistant, call: ServiceCall) -> st
     )
 
 
+_AI_DISABLED_MSG = (
+    "Wardrowbe internal AI is disabled on this server; outfit suggestions are "
+    "deferred to an external agent."
+)
+
+
+def _text_ai_disabled(coordinator: WardrowbeCoordinator) -> bool:
+    """Return True only when the server explicitly reports text AI as off.
+
+    An unknown state (no capabilities polled yet, or a server predating the
+    endpoint) is treated as enabled so we never block a call that would work.
+    """
+    caps = getattr(coordinator.data, "capabilities", None)
+    if not isinstance(caps, dict):
+        return False
+    ai = caps.get("ai")
+    return isinstance(ai, dict) and ai.get("text") is False
+
+
 def _make_suggest_handler(hass: HomeAssistant):
     async def _handle(call: ServiceCall) -> ServiceResponse:
         client, coordinator = _resolve_runtime(hass, call)
+        if _text_ai_disabled(coordinator):
+            raise ServiceValidationError(_AI_DISABLED_MSG)
         payload: dict[str, Any] = {}
         if (occasion := call.data.get(ATTR_OCCASION)) is not None:
             payload["occasion"] = occasion
@@ -273,6 +294,8 @@ def _make_suggest_handler(hass: HomeAssistant):
         try:
             result = await client.async_suggest_outfit(payload)
         except WardrowbeApiError as err:
+            if err.status == 503:
+                raise ServiceValidationError(_AI_DISABLED_MSG) from err
             raise HomeAssistantError(f"suggest_outfit failed: {err}") from err
         await coordinator.async_request_refresh()
         return result
