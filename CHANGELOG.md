@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.3...wardrowbe-v0.2.0) (2026-07-01)
+
+
+### Features
+
+* **api:** handle Wardrowbe 1.4.0 optional AI via capabilities probe ([#9](https://github.com/saya6k/ha-wardrowbe/issues/9)) ([b8dc1df](https://github.com/saya6k/ha-wardrowbe/commit/b8dc1df2be4a572257a89194ead63feea1f3ed79))
+
+
+### Bug Fixes
+
+* **services:** throttle repeated stale-entry service warnings ([#10](https://github.com/saya6k/ha-wardrowbe/issues/10)) ([9c28a63](https://github.com/saya6k/ha-wardrowbe/commit/9c28a63132ed9413f38a1ab04c6d7d0dda2bb5f9))
+
+
+### Documentation
+
+* add HACS My Home Assistant badge to README ([#7](https://github.com/saya6k/ha-wardrowbe/issues/7)) ([6be76b2](https://github.com/saya6k/ha-wardrowbe/commit/6be76b25d377836c0a5643dc137e78a7043b426e))
+
 ## [0.1.3](https://github.com/saya6k/ha-wardrowbe/compare/wardrowbe-v0.1.2...wardrowbe-v0.1.3) (2026-06-24)
 
 
