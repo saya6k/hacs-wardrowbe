@@ -1,0 +1,4 @@
+- [service-guard-pattern](service-guard-pattern.md) — New service handlers must be wrapped with `_guard()`
+- [strings-json-parity](strings-json-parity.md) — `strings.json` and `translations/*.json` must have identical key trees
+- [ship-pr-workflow](ship-pr-workflow.md) — Branch → hacs-preflight → conventional-commit → push → gh pr create
+- [draft-release-publish-rule](draft-release-publish-rule.md) — Publish each release-please draft (via UI) before merging the next release PR
