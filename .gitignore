@@ -22,9 +22,13 @@
 !/zensical.ko.toml
 
 # AGENTS.md is the agent source of truth. CLAUDE.md / GEMINI.md are local
-# symlinks to it; .claude/ and .gemini are local per-tool scaffolding into
-# .agents — none of them are tracked.
+# symlinks to it; .gemini and .claude's per-item symlinks are local per-tool
+# scaffolding into .agents. Only .claude/settings.json (Claude-specific,
+# shared) is tracked; settings.local.json stays per-developer.
 !/AGENTS.md
+!/.claude
+/.claude/*
+!/.claude/settings.json
 
 # Noise inside tracked directories
 __pycache__/

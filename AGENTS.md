@@ -4,7 +4,7 @@
 
 This file is the operating manual for any AI agent (Claude Code, Codex, Copilot, etc.) extending this repository. Read it end-to-end before making changes.
 
-Agent assets live under `.agents/` (the source of truth): `skills/`, `workflows/` (commands), `agents/`, and `memory/` (Claude's per-project memory). Per-tool scaffolding is local-only and untracked: `.claude/` is a real directory with per-item symlinks into `.agents/` (`skills`, `commands` → `workflows`, `agents`) plus Claude-specific `settings.json` / `settings.local.json`, and `.gemini` symlinks to `.agents` wholesale.
+Agent assets live under `.agents/` (the source of truth): `skills/`, `workflows/` (commands), `agents/`, and `memory/` (Claude's per-project memory). `.claude/` is a real directory: its `settings.json` is Claude-specific and tracked; its per-item symlinks into `.agents/` (`skills`, `commands` → `workflows`, `agents`) and `settings.local.json` are local-only, as are the `CLAUDE.md`/`GEMINI.md` → `AGENTS.md` symlinks and `.gemini` → `.agents`.
 
 ## What this project is
 
