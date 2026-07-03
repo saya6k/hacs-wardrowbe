@@ -11,6 +11,18 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "container stop ha-wardrowbe-dev 2>/dev/null || true",
+            "timeout": 30,
+            "statusMessage": "Stopping devcontainer…"
+          }
+        ]
+      }
     ]
   }
 }
