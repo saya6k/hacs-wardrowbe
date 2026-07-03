@@ -13,6 +13,9 @@ on:
 jobs:
   docs:
     name: Build & deploy
+    # Skip prerelease publishes: `release: published` fires for those too,
+    # but the docs site should only reflect a maintainer's stable release.
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

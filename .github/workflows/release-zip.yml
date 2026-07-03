@@ -1,0 +1,48 @@
+name: Release zip
+
+# Attach a wardrowbe.zip asset to every published release, prereleases
+# included. The zip carries the integration files with manifest.json patched
+# to the exact tag version (including any -rc.N suffix); hacs.json declares
+# zip_release, so HACS installs this asset instead of the repo tree -- this is
+# what keeps the installed manifest version identical to the release tag,
+# which the committed manifest on main cannot do for both tracks at once.
+# yamllint disable-line rule:truthy
+on:
+  release:
+    types: [published]
+
+jobs:
+  zip:
+    name: Build & upload zip
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Release events check out the released tag by default.
+      - uses: actions/checkout@v7
+
+      - name: Patch manifest.json version to the tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          python3 - "${TAG#wardrowbe-v}" <<'PY'
+          import json, sys
+          path = "custom_components/wardrowbe/manifest.json"
+          with open(path) as f:
+              data = json.load(f)
+          data["version"] = sys.argv[1]
+          with open(path, "w") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          PY
+
+      - name: Zip integration
+        run: |
+          cd custom_components/wardrowbe
+          zip -r "$GITHUB_WORKSPACE/wardrowbe.zip" .
+
+      - name: Upload asset to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" wardrowbe.zip --clobber
