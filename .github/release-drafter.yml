@@ -1,5 +1,5 @@
-name-template: "wardrowbe-v$RESOLVED_VERSION"
-tag-template: "wardrowbe-v$RESOLVED_VERSION"
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
 version-resolver:
   minor:
     labels: ["enhancement", "feature"]
@@ -28,4 +28,4 @@ template: |
 
   $CHANGES
 
-  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...wardrowbe-v$RESOLVED_VERSION
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
