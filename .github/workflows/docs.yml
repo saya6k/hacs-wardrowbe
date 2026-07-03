@@ -1,8 +1,8 @@
 name: Docs
 
 # Build + deploy the bilingual Zensical site to Pages. Runs only when a GitHub
-# release is published — release-please creates releases as drafts, so a
-# maintainer's manual publish is what deploys the docs. Checkout defaults to
+# release is published — release-drafter maintains a single rolling draft, so
+# a maintainer's manual publish is what deploys the docs. Checkout defaults to
 # the released tag. Also dispatchable for manual re-deploys.
 # yamllint disable-line rule:truthy
 on:

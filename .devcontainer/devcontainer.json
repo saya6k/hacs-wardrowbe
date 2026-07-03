@@ -1,5 +1,5 @@
 {
-  "name": "ha_wardrowbe",
+  "name": "ha-wardrowbe-dev",
   "image": "mcr.microsoft.com/devcontainers/python:3-3.14-bookworm",
   "runArgs": ["--hostname=ha-wardrowbe-dev"],
   "postCreateCommand": "scripts/setup",
