@@ -25,7 +25,7 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          python3 - "${TAG#wardrowbe-v}" <<'PY'
+          python3 - "${TAG#v}" <<'PY'
           import json, sys
           path = "custom_components/wardrowbe/manifest.json"
           with open(path) as f:

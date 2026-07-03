@@ -6,8 +6,8 @@
 # colliding. Keep version-resolver/categories in sync with
 # release-drafter.yml. No autolabeler here: the stable track's job handles
 # PR labeling.
-name-template: "wardrowbe-v$RESOLVED_VERSION"
-tag-template: "wardrowbe-v$RESOLVED_VERSION"
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
 prerelease: true
 prerelease-identifier: "rc"
 version-resolver:
@@ -28,4 +28,4 @@ template: |
 
   $CHANGES
 
-  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...wardrowbe-v$RESOLVED_VERSION
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
