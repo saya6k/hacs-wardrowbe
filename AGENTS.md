@@ -141,6 +141,20 @@ scripts/develop          # http://localhost:8123
 
 OIDC config-flow paths are not yet covered — adding coverage requires `aioclient_mock` + `current_request_with_proxy`. See HA core's `tests/components/spotify` for a worked example.
 
+## Release workflow
+
+This repo (and other `ha-*` HACS components, excluding `ha-app*`) ships on a
+two-track rolling draft release, maintained by release-drafter since
+`1b38066` (#21): a `rc` (prerelease) draft and a `stable` draft, both updated
+continuously as PRs merge to `main`.
+
+1. Verify locally with the devcontainer (`scripts/develop`) before merging —
+   see Testing above.
+2. Once merged and the `rc` draft looks right, publish it as a prerelease
+   from the GitHub Releases UI.
+3. After the prerelease has been exercised with no issues, promote/publish
+   the corresponding `stable` draft.
+
 ## Don't
 
 - Don't introduce per-item entities. The user has explicitly opted out.
