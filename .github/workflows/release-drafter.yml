@@ -1,0 +1,84 @@
+name: Release Drafter
+
+# Standalone (not a workflow_call reusable workflow, unlike validate.yml):
+# needs its own pull_request_target trigger for autolabeling, which reusable
+# workflows invoked only via `uses:` from ci.yml cannot receive.
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches: [main]
+  # Label PRs from their Conventional-Commit title so the version-resolver can
+  # pick the bump (feat -> minor; fix/chore/ci -> patch). Without a PR trigger
+  # the autolabeler never runs, so every release would default to patch. Uses
+  # pull_request_target so labeling works for fork PRs too; release-drafter only
+  # calls the API (no PR code is checked out).
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited]
+  workflow_dispatch:
+
+concurrency:
+  group: release-drafter-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft:
+    name: Draft release
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.drafter.outputs.tag_name }}
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        id: drafter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sync-manifest-version:
+    name: Sync manifest.json version
+    needs: draft
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Compute version from resolved tag
+        id: version
+        run: |
+          TAG="${{ needs.draft.outputs.tag_name }}"
+          echo "version=${TAG#wardrowbe-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Update manifest.json version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 - "$VERSION" <<'PY'
+          import json, sys
+          path = "custom_components/wardrowbe/manifest.json"
+          with open(path) as f:
+              data = json.load(f)
+          data["version"] = sys.argv[1]
+          with open(path, "w") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          PY
+
+      - name: Commit and push if changed
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- custom_components/wardrowbe/manifest.json; then
+            echo "manifest.json already at ${VERSION}; nothing to commit"
+            exit 0
+          fi
+          git add custom_components/wardrowbe/manifest.json
+          git commit -m "chore(release): sync manifest.json version to ${VERSION} [skip ci]"
+          git push origin HEAD:main

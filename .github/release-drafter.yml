@@ -1,0 +1,31 @@
+name-template: "wardrowbe-v$RESOLVED_VERSION"
+tag-template: "wardrowbe-v$RESOLVED_VERSION"
+version-resolver:
+  minor:
+    labels: ["enhancement", "feature"]
+  patch:
+    labels: ["bug", "fix", "chore", "dependencies", "ci"]
+  default: patch
+categories:
+  - title: "New Features"
+    labels: ["enhancement", "feature"]
+  - title: "Bug Fixes"
+    labels: ["bug", "fix"]
+  - title: "Maintenance"
+    labels: ["chore", "dependencies", "ci"]
+autolabeler:
+  - label: enhancement
+    title:
+      - '/^feat(\(.+\))?!?:/i'
+  - label: fix
+    title:
+      - '/^(fix|perf|revert)(\(.+\))?!?:/i'
+  - label: chore
+    title:
+      - '/^(chore|ci|docs|refactor|build|style|test)(\(.+\))?!?:/i'
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...wardrowbe-v$RESOLVED_VERSION

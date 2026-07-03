@@ -1,13 +1,14 @@
 ---
 name: conventional-commit
-description: Write and validate Conventional Commit messages for this HACS integration so release-please computes the next semantic version and CHANGELOG. Use whenever committing — a non-conforming message produces no release.
+description: Write and validate Conventional Commit messages for this HACS integration so release-drafter's autolabeler and version-resolver can pick the right bump for the rolling draft release. Use whenever committing — the PR title (which becomes the squash-merge commit) drives autolabeling.
 ---
 
-# Conventional commit (release-please-aware)
+# Conventional commit (release-drafter-aware)
 
-release-please parses every commit on `main` to compute the next **semantic
-version** (bumped in `custom_components/<domain>/manifest.json`) and the
-CHANGELOG. A message that does not parse is ignored — no version, no CHANGELOG.
+Each PR title (squash-merged onto `main`) is matched against
+`.github/release-drafter.yml`'s `autolabeler` regexes to apply a label, which
+`version-resolver` then maps to a bump for the single rolling draft release.
+A message that doesn't match any pattern still gets `default: patch`.
 
 ## Format
 
@@ -21,20 +22,25 @@ CHANGELOG. A message that does not parse is ignored — no version, no CHANGELOG
 
 ## Types → release effect
 
-| Type | Effect |
-|---|---|
-| `feat` | minor bump · "Features" |
-| `fix` / `perf` / `revert` | patch bump |
-| `docs` / `refactor` / `build` / `ci` | patch bump · in CHANGELOG |
-| `chore` / `test` / `style` | no release (hidden) |
-| `<type>!` or `BREAKING CHANGE:` footer | major bump |
+| Type | Label | Effect |
+|---|---|---|
+| `feat` | `enhancement` | minor bump · "New Features" |
+| `fix` / `perf` / `revert` | `fix` | patch bump · "Bug Fixes" |
+| `chore` / `ci` / `docs` / `refactor` / `build` / `style` / `test` | `chore` | patch bump · "Maintenance" |
+
+No type produces "no release" — every merge to `main` advances the rolling
+draft. There is also no automatic **major** bump: `.github/release-drafter.yml`
+has no `major:` key, so a major version requires manually applying a `major`
+label to the draft release (or editing the config) — `<type>!` / `BREAKING
+CHANGE:` footers are not parsed by release-drafter.
 
 ## Rules
 
 - Imperative subject, ≤ ~72 chars, no trailing period.
 - **Never** `--no-verify` / `--no-gpg-sign`; if a hook fails, fix the cause.
 - **Don't hand-edit** `manifest.json` `version` in a feature commit —
-  release-please owns it.
+  release-drafter's `sync-manifest-version` job owns it (a bot commit pushed
+  to `main` right after your merge, not part of your PR).
 
 ## Output
 

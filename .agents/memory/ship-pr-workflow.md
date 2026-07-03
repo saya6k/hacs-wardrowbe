@@ -11,8 +11,8 @@ Shipping a change follows `/ship-pr` which enforces:
 
 1. **Branch off main** — `git switch -c <type>/<short-slug>` (e.g. `fix/service-validation-error-guard`)
 2. **HACS preflight** — Python compile, JSON validity, manifest keys, semver, i18n parity, brand asset
-3. **Conventional Commit** — title format `fix(scope): description` for release-please. Never `--no-verify`
+3. **Conventional Commit** — title format `fix(scope): description`; release-drafter's autolabeler reads it. Never `--no-verify`
 4. **Push + `gh pr create`** — PR title must be valid Conventional Commit (squash merge uses it as the commit on main)
-5. **Never bump `manifest.json` version** — release-please owns versioning
+5. **Never bump `manifest.json` version** — release-drafter's `sync-manifest-version` job owns it
 
-After merge: `git switch main && git pull --ff-only`. Release PR will auto-bump version + CHANGELOG.
+After merge: `git switch main && git pull --ff-only` (twice — the manifest-sync bot commit lands a few seconds later). release-drafter updates its single rolling draft release directly; a maintainer must manually publish it (no release PR to merge, unlike release-please).

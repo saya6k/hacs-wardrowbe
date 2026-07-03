@@ -18,7 +18,8 @@ authoritative requirements are in `.github/copilot-instructions.md` and
    `documentation`, `issue_tracker`, `codeowners`. And
    `domain` == the `custom_components/<dir>` name == `const.DOMAIN`.
 4. **Semver:** `manifest.json` `version` matches `^\d+\.\d+\.\d+$`. It is bumped
-   by release-please from Conventional Commits — never by hand.
+   by release-drafter's `sync-manifest-version` job from the resolved draft
+   version — never by hand.
 5. **i18n parity:** the key tree of `strings.json`, `translations/en.json`, and
    `translations/ko.json` is identical (only values differ).
 6. **Brand asset:** `custom_components/<domain>/brand/icon.png` exists (HACS
