@@ -25,60 +25,26 @@ permissions:
   pull-requests: write
 
 jobs:
+  # No manifest.json sync here: the committed manifest stays at the latest
+  # stable release, and release-zip.yml patches the authoritative version
+  # into the zip asset at publish time (a push-based sync also cannot work
+  # anymore -- main is protected and only accepts changes via PR).
   draft:
-    name: Draft release
+    name: Draft stable release
     runs-on: ubuntu-latest
-    outputs:
-      tag_name: ${{ steps.drafter.outputs.tag_name }}
     steps:
       - uses: release-drafter/release-drafter@v7
-        id: drafter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  sync-manifest-version:
-    name: Sync manifest.json version
-    needs: draft
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+  draft-prerelease:
+    name: Draft prerelease (rc)
+    # PR events are only for autolabeling, which the stable job already does.
+    if: github.event_name != 'pull_request_target'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: release-drafter/release-drafter@v7
         with:
-          ref: main
-
-      - name: Compute version from resolved tag
-        id: version
-        run: |
-          TAG="${{ needs.draft.outputs.tag_name }}"
-          echo "version=${TAG#wardrowbe-v}" >> "$GITHUB_OUTPUT"
-
-      - name: Update manifest.json version
+          config-name: release-drafter-prerelease.yml
         env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          python3 - "$VERSION" <<'PY'
-          import json, sys
-          path = "custom_components/wardrowbe/manifest.json"
-          with open(path) as f:
-              data = json.load(f)
-          data["version"] = sys.argv[1]
-          with open(path, "w") as f:
-              json.dump(data, f, indent=2, ensure_ascii=False)
-              f.write("\n")
-          PY
-
-      - name: Commit and push if changed
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- custom_components/wardrowbe/manifest.json; then
-            echo "manifest.json already at ${VERSION}; nothing to commit"
-            exit 0
-          fi
-          git add custom_components/wardrowbe/manifest.json
-          git commit -m "chore(release): sync manifest.json version to ${VERSION} [skip ci]"
-          git push origin HEAD:main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
