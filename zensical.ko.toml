@@ -1,10 +1,10 @@
 [project]
 site_name = "Wardrowbe for Home Assistant"
-site_url = "https://saya6k.github.io/ha-wardrowbe/ko/"
+site_url = "https://saya6k.github.io/hacs-wardrowbe/ko/"
 site_description = "셀프호스팅 AI 옷장 관리자 Wardrowbe용 Home Assistant 통합. 분석·아웃핏 수명주기·알림 이력을 엔티티로 노출하고, 아웃핏/착용/세탁 액션을 서비스로 제공."
 docs_dir = "docs/ko"
 site_dir = "site/ko"
-repo_url = "https://github.com/saya6k/ha-wardrowbe"
+repo_url = "https://github.com/saya6k/hacs-wardrowbe"
 edit_uri = "edit/main/docs/ko/"
 
 [project.theme]
@@ -12,10 +12,10 @@ language = "ko"
 
 [[project.extra.alternate]]
 name = "English"
-link = "https://saya6k.github.io/ha-wardrowbe/en/"
+link = "https://saya6k.github.io/hacs-wardrowbe/en/"
 lang = "en"
 
 [[project.extra.alternate]]
 name = "한국어"
-link = "https://saya6k.github.io/ha-wardrowbe/ko/"
+link = "https://saya6k.github.io/hacs-wardrowbe/ko/"
 lang = "ko"

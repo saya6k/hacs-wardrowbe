@@ -8,10 +8,10 @@
   "dependencies": [
     "http"
   ],
-  "documentation": "https://saya6k.github.io/ha-wardrowbe/",
+  "documentation": "https://saya6k.github.io/hacs-wardrowbe/",
   "integration_type": "service",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/saya6k/ha-wardrowbe/issues",
+  "issue_tracker": "https://github.com/saya6k/hacs-wardrowbe/issues",
   "loggers": [
     "custom_components.wardrowbe"
   ],

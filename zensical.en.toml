@@ -1,10 +1,10 @@
 [project]
 site_name = "Wardrowbe for Home Assistant"
-site_url = "https://saya6k.github.io/ha-wardrowbe/en/"
+site_url = "https://saya6k.github.io/hacs-wardrowbe/en/"
 site_description = "Home Assistant integration for Wardrowbe, the self-hosted AI-powered wardrobe manager. Surfaces analytics, outfit lifecycle, and notification history as entities and exposes outfit/wear/wash actions as services."
 docs_dir = "docs/en"
 site_dir = "site/en"
-repo_url = "https://github.com/saya6k/ha-wardrowbe"
+repo_url = "https://github.com/saya6k/hacs-wardrowbe"
 edit_uri = "edit/main/docs/en/"
 
 [project.theme]
@@ -12,10 +12,10 @@ language = "en"
 
 [[project.extra.alternate]]
 name = "English"
-link = "https://saya6k.github.io/ha-wardrowbe/en/"
+link = "https://saya6k.github.io/hacs-wardrowbe/en/"
 lang = "en"
 
 [[project.extra.alternate]]
 name = "한국어"
-link = "https://saya6k.github.io/ha-wardrowbe/ko/"
+link = "https://saya6k.github.io/hacs-wardrowbe/ko/"
 lang = "ko"
