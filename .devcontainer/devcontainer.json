@@ -1,7 +1,7 @@
 {
-  "name": "ha-wardrowbe-dev",
+  "name": "hacs-wardrowbe-dev",
   "image": "mcr.microsoft.com/devcontainers/python:3-3.14-bookworm",
-  "runArgs": ["--hostname=ha-wardrowbe-dev"],
+  "runArgs": ["--hostname=hacs-wardrowbe-dev"],
   "postCreateCommand": "scripts/setup",
   "forwardPorts": [8123],
   "portsAttributes": {
