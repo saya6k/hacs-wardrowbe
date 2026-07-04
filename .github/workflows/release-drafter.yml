@@ -23,6 +23,12 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  # Labels are mutated through the Issues API even for PRs -- without this,
+  # autolabeler's label-add calls 403 silently (no error surfaced in the
+  # release-drafter log), so every PR ships unlabeled and every category
+  # falls through to the flat "What's Changed" list instead of being
+  # grouped. Confirmed missing on a live repo 2026-07-04.
+  issues: write
 
 jobs:
   # No manifest.json sync here: the committed manifest stays at the latest
