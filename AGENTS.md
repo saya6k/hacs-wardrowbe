@@ -8,7 +8,7 @@ Agent assets live under `.agents/` (the source of truth): `skills/`, `workflows/
 
 ## What this project is
 
-A Home Assistant custom component that integrates [Wardrowbe](https://github.com/Anyesh/wardrowbe) — a self-hosted AI wardrobe manager — into Home Assistant 2026.4+ (the first release with Python 3.14 support).
+A Home Assistant custom component that integrates [Wardrowbe](https://github.com/Anyesh/wardrowbe) — a self-hosted AI wardrobe manager — into Home Assistant 2026.4+ (the first release with Python 3.14 support). The actual pinned floor is currently 2026.8.0b0 (see `hacs.json`/`manifest.json`) because the LLM tools platform (`custom_components/wardrowbe/llm/`) targets the `llm` integration merged into HA's 2026.8 cycle (home-assistant/architecture#1412) — not yet on a stable (or even beta) release as of this writing; `scripts/setup` will fail to install until HA cuts that beta.
 
 Scope is intentionally narrow:
 

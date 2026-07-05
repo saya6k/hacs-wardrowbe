@@ -22,12 +22,12 @@ from .wardrobe_tools import (
     LogWashTool,
 )
 
-ToolFactory = Callable[[HomeAssistant, str], llm.Tool]
+ToolFactory = Callable[[HomeAssistant, str, str], llm.Tool]
 
 
 def _factory(cls: type) -> ToolFactory:
-    def make(hass: HomeAssistant, entry_id: str) -> llm.Tool:
-        return cls(hass, entry_id)
+    def make(hass: HomeAssistant, entry_id: str, name_suffix: str) -> llm.Tool:
+        return cls(hass, entry_id, name_suffix)
 
     return make
 

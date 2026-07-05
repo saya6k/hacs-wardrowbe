@@ -5,4 +5,4 @@
 # pin chosen by this package, and you'll end up with the
 # `pytest>=8 vs pytest-asyncio<8` deadlock.
 pytest-homeassistant-custom-component>=0.13.300
-homeassistant>=2026.4.0
+homeassistant>=2026.8.0b0

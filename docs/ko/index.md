@@ -2,7 +2,7 @@
 
 셀프호스팅 AI 옷장 관리자 [Wardrowbe](https://github.com/Anyesh/wardrowbe)용 Home Assistant 커스텀 컴포넌트. 옷장 분석, 아웃핏 수명주기, 알림 이력을 sensor·event 엔티티로 노출하고, 아웃핏/착용/세탁 액션을 서비스로 제공합니다.
 
-> Home Assistant **2026.4.0+** (Python 3.14 지원) 필요.
+> Home Assistant **2026.8.0b0+** (Python 3.14 지원; LLM 툴 플랫폼 마이그레이션이 HA 2026.8 사이클에서 추가된 `llm` 통합을 필요로 함) 필요.
 
 ## 기능
 
