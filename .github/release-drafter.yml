@@ -1,18 +1,30 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
-version-resolver:
-  minor:
-    labels: ["enhancement", "feature"]
-  patch:
-    labels: ["bug", "fix", "chore", "dependencies", "ci"]
-  default: patch
+# Migrated off the deprecated `version-resolver.*.labels` / `categories[*].labels`
+# fields (see https://github.com/release-drafter/release-drafter/pull/1558) -
+# version-resolver entries (no `title`) drive the semver bump only and aren't
+# shown in the release body; the titled entries below are the display
+# categories, both keyed off `when.labels` now instead of a bare `labels` list.
 categories:
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      labels: ["enhancement", "feature"]
+  - type: "version-resolver"
+    semver-increment: "patch"
+    when:
+      labels: ["bug", "fix", "chore", "dependencies", "ci"]
+  - type: "version-resolver"
+    semver-increment: "patch"
   - title: "New Features"
-    labels: ["enhancement", "feature"]
+    when:
+      labels: ["enhancement", "feature"]
   - title: "Bug Fixes"
-    labels: ["bug", "fix"]
+    when:
+      labels: ["bug", "fix"]
   - title: "Maintenance"
-    labels: ["chore", "dependencies", "ci"]
+    when:
+      labels: ["chore", "dependencies", "ci"]
 autolabeler:
   - label: enhancement
     title:

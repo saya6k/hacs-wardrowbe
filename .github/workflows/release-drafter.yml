@@ -31,12 +31,54 @@ permissions:
   issues: write
 
 jobs:
+  # release-drafter's own built-in autolabeler (see the `autolabeler:` key in
+  # release-drafter.yml/release-drafter-prerelease.yml) does not reliably
+  # label PRs in this repo -- confirmed 2026-07-11 in hacs-kakao-map on PRs
+  # #13-#16: correct config, correct permissions (issues/pull-requests:
+  # write), current action version (v7.5.1, well past the pull_request_target
+  # fix in v7.1.0), yet zero labels applied and no error in the log. Root
+  # cause not identified; label PRs ourselves instead of depending on it,
+  # using the exact same Conventional-Commit title patterns as the
+  # `autolabeler:` config so both stay in sync.
+  autolabel:
+    name: Label PR from its title
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v9
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            let label;
+            if (/^feat(\(.+\))?!?:/i.test(title)) {
+              label = "enhancement";
+            } else if (/^(fix|perf|revert)(\(.+\))?!?:/i.test(title)) {
+              label = "fix";
+            } else if (/^(chore|ci|docs|refactor|build|style|test)(\(.+\))?!?:/i.test(title)) {
+              label = "chore";
+            } else {
+              core.info(`No Conventional-Commit prefix matched in title: "${title}"`);
+              return;
+            }
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: [label],
+            });
+            core.info(`Added label "${label}" from title: "${title}"`);
+
   # No manifest.json sync here: the committed manifest stays at the latest
   # stable release, and release-zip.yml patches the authoritative version
   # into the zip asset at publish time (a push-based sync also cannot work
   # anymore -- main is protected and only accepts changes via PR).
   draft:
     name: Draft stable release
+    needs: [autolabel]
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v7
