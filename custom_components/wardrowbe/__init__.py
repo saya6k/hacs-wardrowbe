@@ -35,6 +35,7 @@ from .const import (
 )
 from .coordinator import WardrowbeCoordinator
 from .http_views import WardrowbeImageProxyView
+from .llm_api import async_register_llm_api
 from .oauth2 import OIDCTokenProvider, WardrowbeOAuth2Implementation
 from .services import async_register_services, async_unregister_services
 
@@ -111,6 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: WardrowbeConfigEntry) ->
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await async_register_services(hass)
+    async_register_llm_api(hass, entry)
 
     return True
 

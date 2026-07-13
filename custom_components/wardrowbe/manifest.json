@@ -15,7 +15,6 @@
   "loggers": [
     "custom_components.wardrowbe"
   ],
-  "min_ha_version": "2026.8.0b0",
   "requirements": [],
   "version": "0.0.0"
 }

@@ -7,6 +7,8 @@ from typing import Final
 
 DOMAIN: Final = "wardrowbe"
 
+LLM_API_NAME: Final = "Wardrowbe"
+
 DEFAULT_SCAN_INTERVAL: Final = timedelta(seconds=120)
 DEFAULT_TIMEOUT: Final = 30
 
