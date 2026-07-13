@@ -1,79 +1,24 @@
 #!/usr/bin/env bash
-# Install Home Assistant + dev/test deps inside the devcontainer.
-# Mirrors the layout used by ha_xbloom: a top-level config/ directory holds
-# HA's runtime config, with this repo's integration symlinked into
-# config/custom_components so edits hot-reload.
-set -euxo pipefail
+# Wire this checkout into the devcontainer's baked-in Home Assistant install.
+#
+# The devcontainer base image (see .devcontainer/devcontainer.json) is the
+# official homeassistant/home-assistant image, pinned to a dev-branch nightly.
+# The image tag must match tests/requirements_test.txt's homeassistant pin —
+# one version string shared between the two. hacs.json's `homeassistant`
+# floor stays the end-user-facing 2026.8.0b0; move the image tag and
+# requirements pin to `>=2026.8.0b0` too once that beta ships.
+#
+# Unlike a generic Python devcontainer, the image already bundles HA core, the
+# frontend, and every native/runtime dependency default_config needs (ffmpeg,
+# go2rtc, PyTurboJPEG, aioesphomeapi, bleak, hassil, home-assistant-intents)
+# — so there is nothing to apt/apk here beyond the dev-only Python tools the
+# runtime image doesn't ship. homeassistant in requirements_test.txt is
+# satisfied by the image's preinstalled copy.
+set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-python3 -m pip install --upgrade pip wheel
-
-# System libraries used by HA's default_config bundle:
-#   ffmpeg          → ffmpeg integration (camera streams, snapshots)
-#   libturbojpeg0   → camera image utility (fast JPEG decode)
-#   libpcap0.8      → aiodhcpwatcher (DHCP discovery for some integrations)
-APT_PKGS=(ffmpeg libturbojpeg0 libpcap0.8)
-APT_NEEDED=()
-for pkg in "${APT_PKGS[@]}"; do
-  if ! dpkg -s "$pkg" >/dev/null 2>&1; then
-    APT_NEEDED+=("$pkg")
-  fi
-done
-if [ "${#APT_NEEDED[@]}" -gt 0 ]; then
-  sudo apt-get update
-  sudo apt-get install -y --no-install-recommends "${APT_NEEDED[@]}"
-fi
-
-# go2rtc: streaming relay bundled with HA Container/Supervised but absent
-# from a vanilla pip install. Without it, default_config setup fails. We pull
-# the matching Linux binary from upstream releases.
-if ! command -v go2rtc >/dev/null 2>&1; then
-  ARCH=$(dpkg --print-architecture)
-  case "$ARCH" in
-    amd64) GO2RTC_TARGET=linux_amd64 ;;
-    arm64) GO2RTC_TARGET=linux_arm64 ;;
-    *) GO2RTC_TARGET="" ;;
-  esac
-  if [ -n "$GO2RTC_TARGET" ]; then
-    GO2RTC_VERSION=$(
-      curl -fsSL --max-time 5 https://api.github.com/repos/AlexxIT/go2rtc/releases/latest 2>/dev/null \
-        | sed -nE 's/.*"tag_name": *"v([^"]+)".*/\1/p' | head -n1 \
-        || true
-    )
-    GO2RTC_VERSION="${GO2RTC_VERSION:-1.9.10}"
-    if sudo curl -fsSL -o /usr/local/bin/go2rtc \
-        "https://github.com/AlexxIT/go2rtc/releases/download/v${GO2RTC_VERSION}/go2rtc_${GO2RTC_TARGET}"; then
-      sudo chmod +x /usr/local/bin/go2rtc
-    else
-      echo "WARN: go2rtc download failed; default_config will log a setup error." >&2
-      sudo rm -f /usr/local/bin/go2rtc
-    fi
-  else
-    echo "WARN: skipping go2rtc — unsupported arch $ARCH" >&2
-  fi
-fi
-
-# HA pin must match hacs.json's `homeassistant` floor: 2026.8.0b0, the
-# first beta expected to include the llm.py tools-platform migration
-# (home-assistant/architecture#1412, merged to HA's `dev` branch as of
-# 2026-07-05). Nothing satisfying this is published to PyPI yet (latest is
-# 2026.7.1, no 2026.8.* pre-release exists) — HA typically cuts its first
-# monthly beta about a week before the stable release, so this install
-# will start succeeding once that beta ships. Until then this command
-# fails; that's expected, not a bug in this script.
-#
-# aioesphomeapi is a transitive dep of HA's `usb` integration (via
-# serialx.platforms.serial_esphome). HA does not list it in its core wheel,
-# so default_config triggers a ModuleNotFoundError at startup unless we
-# install it explicitly here.
-python3 -m pip install \
-  "homeassistant>=2026.8.0b0" \
-  "aioesphomeapi" \
-  "ruff" \
-  "mypy" \
-  "colorlog" \
-  -r tests/requirements_test.txt
+pip3 install --no-cache-dir -r tests/requirements_test.txt ruff mypy colorlog
 
 mkdir -p config
 if [ ! -f config/configuration.yaml ]; then
