@@ -8,7 +8,7 @@ Agent assets live under `.agents/` (the source of truth): `skills/`, `workflows/
 
 ## What this project is
 
-A Home Assistant custom component that integrates [Wardrowbe](https://github.com/Anyesh/wardrowbe) — a self-hosted AI wardrobe manager — into Home Assistant 2026.4+ (the first release with Python 3.14 support). The actual pinned floor is currently 2026.8.0b0 (see `hacs.json`/`manifest.json`) because the LLM tools platform (`custom_components/wardrowbe/llm/`) targets the `llm` integration merged into HA's 2026.8 cycle (home-assistant/architecture#1412) — not yet on a stable (or even beta) release as of this writing; `scripts/setup` will fail to install until HA cuts that beta.
+A Home Assistant custom component that integrates [Wardrowbe](https://github.com/Anyesh/wardrowbe) — a self-hosted AI wardrobe manager — into Home Assistant 2026.4+ (the first release with Python 3.14 support). The actual pinned floor is currently 2026.8.0b0 (see `hacs.json`) because the LLM API shell (`custom_components/wardrowbe/llm_api.py`) calls into the `llm` integration's tool-platform aggregator, merged into HA's 2026.8 cycle (home-assistant/architecture#1412) — not yet on a stable (or even beta) release as of this writing. `scripts/setup` and CI run against HA's dev-nightly Docker image in the meantime (see Local development & testing below); once 2026.8.0b0 ships, the devcontainer image, `tests/requirements_test.txt`, and this floor all move to that pin together.
 
 Scope is intentionally narrow:
 
@@ -30,11 +30,13 @@ ha_wardrowbe/
 │   ├── entity.py               # WardrowbeEntity base (device + unique_id)
 │   ├── sensor.py / binary_sensor.py / event.py
 │   ├── services.py / services.yaml
+│   ├── llm_api.py              # thin, opt-in per-entry llm.API shell (no llm/ imports at module level)
+│   ├── llm/                    # lazily-loaded LLM tools platform (see "LLM API" below)
 │   ├── strings.json + translations/en.json
 │   └── diagnostics.py
-├── .devcontainer/devcontainer.json   ← Python 3.14 + VS Code extensions
+├── .devcontainer/devcontainer.json   ← HA dev-nightly image (see Local development & testing)
 ├── scripts/
-│   ├── setup                    # installs HA + test deps + symlinks integration into config/
+│   ├── setup                    # wires this checkout into the image's HA + installs test deps
 │   ├── develop                  # runs HA on :8123 from this checkout
 │   └── test                     # ruff + mypy + pytest
 ├── tests/                       # pytest-homeassistant-custom-component
@@ -77,6 +79,21 @@ ha_wardrowbe/
 
 Add it to `PLATFORMS` in `__init__.py` and create the corresponding module. Always extend `WardrowbeEntity` so the device link and unique_id stay consistent.
 
+### A new LLM tool
+
+1. Add the `Tool` subclass to `outfit_tools.py` or `wardrobe_tools.py` (or a new module under `llm/`), extending `BaseWardrowbeTool`. The tool's `description` carries all "when to call" guidance for the LLM — there is no separate per-tool prompt elsewhere.
+2. Register a factory for it in `TOOL_FACTORIES` (`llm/tools.py`).
+3. Never import anything under `llm/` from a module-level import outside `llm/` itself — see "LLM API" below.
+
+## LLM API
+
+Wardrowbe tools are **opt-in**: each config entry registers its own `llm.API` (id `wardrowbe__<entry_id>`, name `Wardrowbe — <entry title>`) that a user attaches explicitly in a conversation agent's LLM API settings. Tools are never contributed to the shared Assist API automatically — a user with Wardrowbe installed but no agent pointed at it gets no tools.
+
+- `llm_api.py` is the only module HA's setup path imports. It is deliberately thin: no `llm/` or `homeassistant.components.llm` import at module scope, or every tool module would load eagerly on every Wardrowbe setup instead of lazily on first LLM request. `WardrowbeAPI.async_get_api_instance` does a function-scoped import of the `llm` integration's aggregator (`homeassistant.components.llm.async_get_tools`) and calls it with the entry's own API id.
+- `llm/__init__.py::async_get_tools` is the platform hook HA's `llm` integration discovers lazily (home-assistant/architecture#1412). It answers only `wardrowbe__<entry_id>` ids for a *loaded* entry — `None` for `assist` and everything else — so per-entry opt-in is enforced at the platform layer, not just by which API a user happens to select.
+- Every registered `llm.API` (including each Wardrowbe entry) is also exposed over MCP at `/api/mcp/wardrowbe__<entry_id>`, gated by an HA admin access token — no extra code needed on our side.
+- Requires HA 2026.8+ for `homeassistant.components.llm` to exist at all; see the floor note above.
+
 ## Auth model
 
 Wardrowbe issues 7-day JWTs from `POST /api/v1/auth/sync`. The integration manages two flavours of "what to send to /auth/sync":
@@ -112,7 +129,7 @@ The repo is laid out so a fresh devcontainer is the only setup step you need.
 
 ### In the devcontainer (preferred)
 
-VS Code → "Reopen in Container" picks up `.devcontainer/devcontainer.json` (Python 3.14 base image). `postCreateCommand` runs `scripts/setup`, which installs Home Assistant 2026.5.x, ruff, mypy, and the test dependencies, then symlinks `custom_components/wardrowbe` into `config/custom_components/wardrowbe` so source edits hot-reload.
+VS Code → "Reopen in Container" picks up `.devcontainer/devcontainer.json`, which is pinned to an official `homeassistant/home-assistant` **dev-nightly** image (not a generic Python base) — HA 2026.8 isn't on PyPI yet, so the only way to run or test against it today is the nightly Docker build the HA core team publishes daily. The image already bundles HA core and every `default_config` runtime dependency; `postCreateCommand` runs `scripts/setup`, which just installs ruff, mypy, and the test dependencies (`tests/requirements_test.txt`, pinned to match the image tag) and symlinks `custom_components/wardrowbe` into `config/custom_components/wardrowbe` so source edits hot-reload. Once 2026.8.0b0 ships on PyPI, the image tag, `tests/requirements_test.txt`, and `hacs.json`'s floor all move to that pin together and the devcontainer can go back to a generic Python base if desired.
 
 ```sh
 scripts/develop          # boots HA on :8123 with this integration mounted
@@ -122,11 +139,7 @@ scripts/test tests/test_config_flow.py::test_dev_mode_happy_path  # arg passthro
 
 ### On the host (no devcontainer)
 
-```sh
-python3.14 -m venv .venv && source .venv/bin/activate
-scripts/setup            # works outside the container too
-scripts/develop          # http://localhost:8123
-```
+Not viable until 2026.8.0b0 ships on PyPI: `scripts/setup` now only installs test tooling and expects the devcontainer image to already provide `homeassistant`, which a bare venv doesn't have. Use the devcontainer until then.
 
 ### Live integration verification
 
@@ -134,6 +147,7 @@ scripts/develop          # http://localhost:8123
 2. **Settings → Devices & Services → Add Integration → Wardrowbe**
 3. Pick **Development mode** with a stub `external_id` against a local Wardrowbe instance, or **OIDC** against your real provider.
 4. Watch `config/home-assistant.log` for `custom_components.wardrowbe` lines (DEBUG enabled by `scripts/setup`).
+5. To verify the LLM API: **Settings → Voice assistants**, edit (or add) a conversation agent, and confirm **Wardrowbe — `<account title>`** appears in its LLM API selector. Attach it and confirm the ten tools resolve (e.g. ask it to suggest an outfit). With two Wardrowbe entries configured, confirm two separate APIs appear.
 
 ### Unit tests
 
