@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from typing import Callable
+from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -36,7 +35,7 @@ from .const import (
 )
 from .coordinator import WardrowbeCoordinator
 from .http_views import WardrowbeImageProxyView
-from .llm_api import async_cleanup_llm_api, async_setup_llm_api
+from .llm_api import async_register_llm_api
 from .oauth2 import OIDCTokenProvider, WardrowbeOAuth2Implementation
 from .services import async_register_services, async_unregister_services
 
@@ -55,7 +54,6 @@ PLATFORMS: list[Platform] = [
 class WardrowbeRuntime:
     coordinator: WardrowbeCoordinator
     client: WardrowbeClient
-    llm_api_unregister: Callable[[], None] | None = field(default=None)
 
 
 type WardrowbeConfigEntry = ConfigEntry[WardrowbeRuntime]
@@ -114,17 +112,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: WardrowbeConfigEntry) ->
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await async_register_services(hass)
+    async_register_llm_api(hass, entry)
 
-    entry.runtime_data.llm_api_unregister = await async_setup_llm_api(hass, entry)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: WardrowbeConfigEntry) -> bool:
     """Unload a Wardrowbe config entry."""
-    runtime = getattr(entry, "runtime_data", None)
-    if runtime is not None:
-        async_cleanup_llm_api(runtime.llm_api_unregister)
-        runtime.llm_api_unregister = None
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok and not _other_entries(hass, entry):
         await async_unregister_services(hass)

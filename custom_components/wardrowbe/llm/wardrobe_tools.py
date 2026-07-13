@@ -17,9 +17,12 @@ from .render import extract_image_url, svg_summary
 class GetWardrobeSummaryTool(BaseWardrowbeTool):
     name = "get_wardrobe_summary"
     description = (
-        "Return wardrobe stats (item counts, outfits this week/month, "
-        "acceptance rate, average rating, total wears). Renders a "
-        "summary card."
+        "Return overall wardrobe statistics: item counts by status "
+        "(ready, processing, archived), total and recent outfit counts, "
+        "outfit acceptance rate, average outfit rating, and total wears. "
+        "Call this when the user asks general questions about their "
+        "wardrobe or outfit habits rather than about one specific outfit "
+        "or item."
     )
     parameters = vol.Schema({})
 
@@ -72,7 +75,12 @@ class GetWardrobeSummaryTool(BaseWardrowbeTool):
 
 class GetMostWornItemsTool(BaseWardrowbeTool):
     name = "get_most_worn_items"
-    description = "List the user's most-worn items as an image gallery."
+    description = (
+        "List the user's most-worn wardrobe items as an image gallery, "
+        "ranked by wear count. Call this when the user asks what they "
+        "wear most often or which pieces get the most use. Optional "
+        "limit (1-10, default 5) caps how many items are returned."
+    )
     parameters = vol.Schema(
         {vol.Optional("limit"): vol.All(int, vol.Range(min=1, max=10))}
     )
@@ -125,8 +133,11 @@ class GetMostWornItemsTool(BaseWardrowbeTool):
 class GetItemsToWashTool(BaseWardrowbeTool):
     name = "get_items_to_wash"
     description = (
-        "List wardrobe items the user should wash (server-flagged "
-        "needs_wash=true). Returns an image gallery and item ids."
+        "List wardrobe items the server has flagged as needing a wash "
+        "(needs_wash=true), as an image gallery with item ids. Call this "
+        "when the user asks what needs washing or laundry. Optional "
+        "limit (1-20, default 8). Use the returned item_id with log_wash "
+        "once the user says they've washed something."
     )
     parameters = vol.Schema(
         {vol.Optional("limit"): vol.All(int, vol.Range(min=1, max=20))}
@@ -174,9 +185,12 @@ class GetItemsToWashTool(BaseWardrowbeTool):
 class LogWashTool(BaseWardrowbeTool):
     name = "log_wash"
     description = (
-        "Mark a wardrobe item as washed. Pass either item_id (preferred) "
-        "or item_name to match against the items-to-wash list. Resets the "
-        "wear-since-wash counter on Wardrowbe."
+        "Mark a wardrobe item as washed and reset its wear-since-wash "
+        "counter. Call this when the user says they washed, cleaned, or "
+        "laundered an item. Pass item_id (preferred, e.g. from "
+        "get_items_to_wash) or item_name to match by name against the "
+        "current items-to-wash list. Fails if neither is given or no "
+        "match is found."
     )
     parameters = vol.Schema(
         {

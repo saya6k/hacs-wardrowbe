@@ -17,8 +17,15 @@ from .render import extract_image_url, outfit_to_results
 class SuggestOutfitTool(BaseWardrowbeTool):
     name = "suggest_outfit"
     description = (
-        "Generate a new outfit recommendation. Optional hints: occasion, "
-        "time_of_day, target_date (YYYY-MM-DD), notes."
+        "Generate a new outfit recommendation from the wardrobe. Call this "
+        "when the user asks what to wear, wants an outfit for an occasion, "
+        "or wants an alternative to a previous suggestion. All arguments "
+        "are optional hints, not requirements: occasion (e.g. work, "
+        "casual, formal), time_of_day, target_date (YYYY-MM-DD, defaults "
+        "to today), and free-text notes (e.g. 'it's raining', 'meeting a "
+        "client'). Produces a pending outfit; follow up with "
+        "accept_latest_outfit, reject_latest_outfit, or "
+        "skip_latest_outfit once the user reacts to it."
     )
     parameters = vol.Schema(
         {
@@ -66,7 +73,10 @@ class SuggestOutfitTool(BaseWardrowbeTool):
 class GetLatestOutfitTool(BaseWardrowbeTool):
     name = "get_latest_outfit"
     description = (
-        "Return the most recent outfit (any status) and render its images."
+        "Return the single most recent outfit regardless of its status "
+        "(pending, accepted, rejected, or skipped) and render its images. "
+        "Call this when the user wants a reminder of what was last "
+        "suggested, without generating a new outfit."
     )
     parameters = vol.Schema({})
 
@@ -102,8 +112,11 @@ class GetLatestOutfitTool(BaseWardrowbeTool):
 class GetRecentOutfitsTool(BaseWardrowbeTool):
     name = "get_recent_outfits"
     description = (
-        "List recent outfits as an image gallery. Optional status filter "
-        "(pending, accepted, rejected, skipped) and limit (1-12)."
+        "List recent outfits as an image gallery, most recent first. Call "
+        "this when the user wants to browse outfit history rather than "
+        "act on the current pending suggestion. Optional status filter "
+        "(pending, accepted, rejected, skipped) narrows the list; "
+        "optional limit (1-12, default 6) caps how many are returned."
     )
     parameters = vol.Schema(
         {
@@ -208,17 +221,33 @@ class _OutfitActionTool(BaseWardrowbeTool):
 
 class AcceptLatestOutfitTool(_OutfitActionTool):
     name = "accept_latest_outfit"
-    description = "Accept the most recent pending outfit suggestion."
+    description = (
+        "Mark the most recent pending outfit suggestion as accepted, "
+        "meaning the user will wear it. Call this after suggest_outfit "
+        "has produced a pending outfit and the user confirms they like "
+        "it. Fails if there is no pending outfit."
+    )
     action = "accept"
 
 
 class RejectLatestOutfitTool(_OutfitActionTool):
     name = "reject_latest_outfit"
-    description = "Reject the most recent pending outfit suggestion."
+    description = (
+        "Mark the most recent pending outfit suggestion as rejected, "
+        "meaning the user does not want to wear it. Call this when the "
+        "user dislikes the suggestion; consider calling suggest_outfit "
+        "again afterwards for a new option. Fails if there is no pending "
+        "outfit."
+    )
     action = "reject"
 
 
 class SkipLatestOutfitTool(_OutfitActionTool):
     name = "skip_latest_outfit"
-    description = "Skip the most recent pending outfit suggestion."
+    description = (
+        "Mark the most recent pending outfit suggestion as skipped, "
+        "meaning the user is deferring the decision without accepting or "
+        "rejecting it. Call this when the user wants to postpone "
+        "deciding. Fails if there is no pending outfit."
+    )
     action = "skip"

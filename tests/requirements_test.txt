@@ -4,5 +4,11 @@
 # the resolver will pick a stale version that conflicts with the HA-aligned
 # pin chosen by this package, and you'll end up with the
 # `pytest>=8 vs pytest-asyncio<8` deadlock.
-pytest-homeassistant-custom-component>=0.13.300
-homeassistant>=2026.4.0
+#
+# Must match the devcontainer image tag (.devcontainer/devcontainer.json) —
+# one nightly version string across both. Inside the devcontainer,
+# `homeassistant` is satisfied by the image's preinstalled copy. Move both
+# to `>=2026.8.0b0` together once that beta ships (hacs.json's floor
+# already reads 2026.8.0b0 — it's the end-user-facing pin).
+pytest-homeassistant-custom-component>=0.13.346
+homeassistant>=2026.8.0.dev202607120312

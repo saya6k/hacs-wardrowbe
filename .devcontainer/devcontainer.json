@@ -1,7 +1,8 @@
 {
   "name": "hacs-wardrowbe-dev",
-  "image": "mcr.microsoft.com/devcontainers/python:3-3.14-bookworm",
-  "runArgs": ["--hostname=hacs-wardrowbe-dev"],
+  "image": "homeassistant/home-assistant:2026.8.0.dev202607120312",
+  "runArgs": ["--hostname=hacs-wardrowbe-dev", "--entrypoint", "/bin/bash", "-p", "8123:8123"],
+  "overrideCommand": true,
   "postCreateCommand": "scripts/setup",
   "forwardPorts": [8123],
   "portsAttributes": {
@@ -24,7 +25,7 @@
         "editor.tabSize": 4,
         "editor.formatOnSave": true,
         "files.trimTrailingWhitespace": true,
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.defaultInterpreterPath": "/usr/local/bin/python3",
         "python.analysis.typeCheckingMode": "basic",
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff"
@@ -32,5 +33,5 @@
       }
     }
   },
-  "remoteUser": "vscode"
+  "remoteUser": "root"
 }

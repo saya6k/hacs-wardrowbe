@@ -2,7 +2,7 @@
 
 A Home Assistant custom component for [Wardrowbe](https://github.com/Anyesh/wardrowbe), the self-hosted AI-powered wardrobe manager. Surfaces wardrobe analytics, outfit lifecycle, and notification history as sensors and event entities, and exposes outfit/wear/wash actions as services.
 
-> Requires Home Assistant **2026.4.0+** (Python 3.14 support).
+> Requires Home Assistant **2026.8.0b0+** (Python 3.14 support; the LLM tools-platform migration needs the `llm` integration added in HA's 2026.8 cycle).
 
 ## Features
 

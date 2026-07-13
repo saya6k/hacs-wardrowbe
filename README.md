@@ -11,7 +11,7 @@
 
 A Home Assistant custom component for [Wardrowbe](https://github.com/Anyesh/wardrowbe), the self-hosted AI-powered wardrobe manager. Surfaces wardrobe analytics, outfit lifecycle, and notification history as sensors and event entities, and exposes outfit/wear/wash actions as services.
 
-> Requires Home Assistant **2026.4.0+** (Python 3.14 support).
+> Requires Home Assistant **2026.8.0b0+** (Python 3.14 support; the opt-in LLM API needs the `llm` integration added in HA's 2026.8 cycle).
 
 ## Features
 
@@ -93,6 +93,10 @@ Pick **Development mode** in step 1 and enter the `external_id` you log in with 
 ### Multiple accounts
 
 Run the **Add Integration** flow once per account. Each entry creates its own device, sensors, event entities, and shows up in the `config_entry_id` selector for service calls.
+
+### Voice assistant / LLM tools
+
+Each Wardrowbe account registers its own LLM API — **Wardrowbe — `<account title>`** — that you attach explicitly to a conversation agent; it's never enabled automatically. In **Settings → Voice assistants**, edit an agent, and pick it from the LLM API selector to give that agent ten tools covering outfit suggestions, wardrobe stats, and wash tracking. With multiple accounts, each gets its own selectable API. It's also reachable over MCP at `/api/mcp/wardrowbe__<entry_id>` with an HA admin access token, if you're driving Wardrowbe from an external MCP client instead of HA's own conversation agents.
 
 ## Automations
 
