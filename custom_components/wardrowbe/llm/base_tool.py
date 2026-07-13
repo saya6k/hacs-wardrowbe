@@ -17,14 +17,10 @@ class BaseWardrowbeTool(llm.Tool):
 
     service: str = "wardrowbe"
 
-    def __init__(
-        self, hass: HomeAssistant, entry_id: str, name_suffix: str = ""
-    ) -> None:
+    def __init__(self, hass: HomeAssistant, entry_id: str) -> None:
         super().__init__()
         self.hass = hass
         self.entry_id = entry_id
-        if name_suffix:
-            self.name = f"{self.name}{name_suffix}"
 
     @property
     def entry(self) -> ConfigEntry | None:

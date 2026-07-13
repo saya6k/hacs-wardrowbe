@@ -1,64 +1,41 @@
 """LLM tools platform for Wardrowbe.
 
-Follows the LLM Tool Platform architecture
-(home-assistant/architecture#1412, HA 2026.8+): rather than registering a
-separate, user-selectable ``llm.API``, this module contributes tools
-directly into the shared Assist API via the ``async_get_tools`` hook that
-the core ``llm`` integration discovers and calls automatically. No manual
-registration/unregistration per config entry is needed anymore.
-
-Multi-account installs get one full tool set per exposed config entry in a
-single call; tool names are suffixed with the entry's slug only when more
-than one entry is loaded, so the common single-account case keeps short,
-stable names.
+Discovered lazily by Home Assistant's `llm` integration (HA 2026.8+) the
+first time any LLM API collects tools
+(home-assistant/architecture#1412). This module answers only for
+Wardrowbe's own per-entry API ids — never `assist` or any other
+integration's API — so Wardrowbe tools only ever surface through the
+user-selected "Wardrowbe — <account>" API (see `..llm_api`), not the
+shared Assist API.
 """
 
 from __future__ import annotations
 
-from homeassistant.components.homeassistant import async_should_expose
 from homeassistant.components.llm import LLMTools
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.llm import LLM_API_ASSIST, LLMContext, Tool
-from homeassistant.util import slugify
+from homeassistant.helpers.llm import LLMContext
 
 from ..const import DOMAIN
 from .const import API_PROMPT
 from .tools import TOOL_FACTORIES
+
+_API_ID_PREFIX = f"{DOMAIN}__"
 
 
 @callback
 def async_get_tools(
     hass: HomeAssistant, llm_context: LLMContext, api_id: str
 ) -> LLMTools | None:
-    """Return Wardrowbe tools for every exposed config entry."""
-    if api_id != LLM_API_ASSIST or not llm_context.assistant:
+    """Return this entry's Wardrowbe tools, or None for any other API id."""
+    if not api_id.startswith(_API_ID_PREFIX):
         return None
 
-    entries = [
-        entry
-        for entry in hass.config_entries.async_entries(DOMAIN)
-        if entry.state is ConfigEntryState.LOADED
-        and _entry_is_exposed(hass, entry.entry_id, llm_context.assistant)
-    ]
-    if not entries:
+    entry_id = api_id[len(_API_ID_PREFIX) :]
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if entry is None or entry.state is not ConfigEntryState.LOADED:
+        # Unknown id, or the entry was unloaded since the API was requested.
         return None
 
-    suffix_needed = len(entries) > 1
-    tools: list[Tool] = []
-    for entry in entries:
-        suffix = f"_{slugify(entry.title)}" if suffix_needed else ""
-        tools.extend(
-            factory(hass, entry.entry_id, suffix) for factory in TOOL_FACTORIES
-        )
+    tools = [factory(hass, entry_id) for factory in TOOL_FACTORIES]
     return LLMTools(tools=tools, prompt=API_PROMPT)
-
-
-def _entry_is_exposed(hass: HomeAssistant, entry_id: str, assistant: str) -> bool:
-    """Whether any entity from this config entry is exposed to the assistant."""
-    registry = er.async_get(hass)
-    return any(
-        async_should_expose(hass, assistant, entity.entity_id)
-        for entity in er.async_entries_for_config_entry(registry, entry_id)
-    )
