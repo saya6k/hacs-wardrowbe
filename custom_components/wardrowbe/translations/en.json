@@ -41,6 +41,7 @@
     "abort": {
       "already_configured": "This Wardrowbe account is already configured.",
       "reauth_account_mismatch": "The account that authenticated does not match the existing entry.",
+      "reconfigure_account_mismatch": "The account that authenticated does not match the existing entry.",
       "no_id_token": "OIDC provider did not return an id_token.",
       "no_user_id": "Wardrowbe did not return a user identifier.",
       "missing_oidc_config": "Stored OIDC configuration is incomplete; please remove and re-add the entry.",

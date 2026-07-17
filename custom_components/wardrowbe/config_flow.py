@@ -88,7 +88,9 @@ class WardrowbeConfigFlow(
         self._scopes: str = DEFAULT_OIDC_SCOPES
         self._authorize_url: str | None = None
         self._token_url: str | None = None
+        self._external_id: str | None = None
         self._reauth_entry: ConfigEntry | None = None
+        self._reconfigure_entry: ConfigEntry | None = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -123,7 +125,7 @@ class WardrowbeConfigFlow(
                     TextSelectorConfig(type=TextSelectorType.URL)
                 ),
                 vol.Required(
-                    CONF_AUTH_MODE, default=AUTH_MODE_OIDC
+                    CONF_AUTH_MODE, default=self._auth_mode or AUTH_MODE_OIDC
                 ): SelectSelector(
                     SelectSelectorConfig(
                         options=[
@@ -135,7 +137,7 @@ class WardrowbeConfigFlow(
                         translation_key="auth_mode",
                     )
                 ),
-                vol.Required(CONF_VERIFY_SSL, default=True): BooleanSelector(),
+                vol.Required(CONF_VERIFY_SSL, default=self._verify_ssl): BooleanSelector(),
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
@@ -176,7 +178,9 @@ class WardrowbeConfigFlow(
                     },
                 )
 
-        schema = vol.Schema({vol.Required(CONF_EXTERNAL_ID): str})
+        schema = vol.Schema(
+            {vol.Required(CONF_EXTERNAL_ID, default=self._external_id or ""): str}
+        )
         return self.async_show_form(step_id="dev", data_schema=schema, errors=errors)
 
     # --- step: OIDC config + handoff to OAuth helper ---
@@ -200,10 +204,14 @@ class WardrowbeConfigFlow(
                 self._authorize_url = metadata["authorization_endpoint"]
                 self._token_url = metadata["token_endpoint"]
                 self._client_id = user_input[CONF_CLIENT_ID]
-                # Empty client_secret signals a PKCE public client.
-                self._client_secret = (
-                    (user_input.get(CONF_CLIENT_SECRET) or "").strip() or None
-                )
+                # Empty client_secret signals a PKCE public client — but only on
+                # fresh setup. On reauth/reconfigure, a blank field just means
+                # "didn't retype it", so keep whatever was already stored.
+                raw_secret = (user_input.get(CONF_CLIENT_SECRET) or "").strip()
+                if raw_secret:
+                    self._client_secret = raw_secret
+                elif self._reauth_entry is None and self._reconfigure_entry is None:
+                    self._client_secret = None
                 self._scopes = user_input.get(CONF_SCOPES) or DEFAULT_OIDC_SCOPES
 
                 impl = WardrowbeOAuth2Implementation(
@@ -229,12 +237,12 @@ class WardrowbeConfigFlow(
                 vol.Required(CONF_ISSUER_URL, default=suggested_issuer): TextSelector(
                     TextSelectorConfig(type=TextSelectorType.URL)
                 ),
-                vol.Required(CONF_CLIENT_ID): str,
+                vol.Required(CONF_CLIENT_ID, default=self._client_id or ""): str,
                 # Optional — leave blank for PKCE public clients.
                 vol.Optional(CONF_CLIENT_SECRET, default=""): TextSelector(
                     TextSelectorConfig(type=TextSelectorType.PASSWORD)
                 ),
-                vol.Optional(CONF_SCOPES, default=DEFAULT_OIDC_SCOPES): str,
+                vol.Optional(CONF_SCOPES, default=self._scopes): str,
             }
         )
         return self.async_show_form(
@@ -298,6 +306,7 @@ class WardrowbeConfigFlow(
         self._host = existing.get(CONF_HOST)
         self._verify_ssl = existing.get(CONF_VERIFY_SSL, True)
         self._auth_mode = existing.get(CONF_AUTH_MODE)
+        self._external_id = existing.get(CONF_EXTERNAL_ID)
         self._issuer_url = existing.get(CONF_ISSUER_URL)
         self._authorize_url = existing.get(CONF_AUTHORIZE_URL)
         self._token_url = existing.get(CONF_TOKEN_URL)
@@ -342,6 +351,28 @@ class WardrowbeConfigFlow(
             user_input={"implementation": impl.domain}
         )
 
+    # --- reconfigure ---
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        self._reconfigure_entry = self._get_reconfigure_entry()
+        existing = self._reconfigure_entry.data
+        self._host = existing.get(CONF_HOST)
+        self._verify_ssl = existing.get(CONF_VERIFY_SSL, True)
+        self._auth_mode = existing.get(CONF_AUTH_MODE)
+        self._external_id = existing.get(CONF_EXTERNAL_ID)
+        self._issuer_url = existing.get(CONF_ISSUER_URL)
+        self._authorize_url = existing.get(CONF_AUTHORIZE_URL)
+        self._token_url = existing.get(CONF_TOKEN_URL)
+        self._client_id = existing.get(CONF_CLIENT_ID)
+        self._client_secret = existing.get(CONF_CLIENT_SECRET)
+        self._scopes = existing.get(CONF_SCOPES, DEFAULT_OIDC_SCOPES)
+        # Reuse the initial "user" step so host/auth_mode/verify_ssl (and, via
+        # the dev/oidc steps it leads to, everything else) are all editable —
+        # not just the token, unlike reauth.
+        return await self.async_step_user()
+
     # --- helpers ---
 
     async def _discover_issuer(self) -> str:
@@ -382,10 +413,15 @@ class WardrowbeConfigFlow(
         assert self._host is not None
         unique_id = f"{self._host}::{user_id}"
         await self.async_set_unique_id(unique_id)
-        if self._reauth_entry is None:
+        entry_to_update = self._reauth_entry or self._reconfigure_entry
+        if entry_to_update is None:
             self._abort_if_unique_id_configured()
         else:
-            self._abort_if_unique_id_mismatch(reason="reauth_account_mismatch")
+            self._abort_if_unique_id_mismatch(
+                reason="reauth_account_mismatch"
+                if self._reauth_entry is not None
+                else "reconfigure_account_mismatch"
+            )
         data: dict[str, Any] = {
             CONF_HOST: self._host,
             CONF_VERIFY_SSL: self._verify_ssl,
@@ -393,6 +429,6 @@ class WardrowbeConfigFlow(
             CONF_USER_NAME: user_name,
             **extra_data,
         }
-        if self._reauth_entry is not None:
-            return self.async_update_reload_and_abort(self._reauth_entry, data=data)
+        if entry_to_update is not None:
+            return self.async_update_reload_and_abort(entry_to_update, data=data)
         return self.async_create_entry(title=f"Wardrowbe ({user_name})", data=data)
