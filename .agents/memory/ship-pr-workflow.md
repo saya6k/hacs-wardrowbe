@@ -13,6 +13,6 @@ Shipping a change follows `/ship-pr` which enforces:
 2. **HACS preflight** — Python compile, JSON validity, manifest keys, semver, i18n parity, brand asset
 3. **Conventional Commit** — title format `fix(scope): description`; release-drafter's autolabeler reads it. Never `--no-verify`
 4. **Push + `gh pr create`** — PR title must be valid Conventional Commit (squash merge uses it as the commit on main)
-5. **Never bump `manifest.json` version** — release-drafter's `sync-manifest-version` job owns it
+5. **Never bump `manifest.json` version** — it stays committed as `0.0.0` on `main` permanently. `release-zip.yml` patches the version into the *zip asset's* manifest.json at release-publish time (tag → version), which is what HACS actually installs (`hacs.json` sets `zip_release: true`). There is no bot commit back to `main`.
 
-After merge: `git switch main && git pull --ff-only` (twice — the manifest-sync bot commit lands a few seconds later). release-drafter updates its single rolling draft release directly; a maintainer must manually publish it (no release PR to merge, unlike release-please).
+After merge: `git switch main && git pull --ff-only` — one pull is enough, nothing else lands automatically. release-drafter updates its two rolling drafts (`rc` prerelease track + `stable` track) directly on push to main; a maintainer must manually publish each from the GitHub Releases UI (or `gh release edit <tag> --draft=false [--prerelease]`) — no release PR to merge, unlike release-please. Publishing the `rc` draft triggers `release-zip.yml` (attaches the version-patched zip) and, only for a non-prerelease `stable` publish, `docs.yml`.

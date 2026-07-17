@@ -132,7 +132,9 @@ async def test_api_instance_end_to_end(
         hass, _api_id(dev_mode_entry.entry_id), _llm_context()
     )
 
-    assert len(instance.tools) == 10
+    # 10 wardrowbe tools + HA core's own built-in GetDateTimeTool, which
+    # async_get_api injects into every API instance.
+    assert len(instance.tools) == 11
     assert "wardrobe" in instance.api_prompt.lower()
 
 
