@@ -308,7 +308,10 @@ class WardrowbeClient:
                 and self._jwt_expires_at - _JWT_REFRESH_LEEWAY > now
             ):
                 return self._jwt
-            payload = await self._token_provider.async_get_sync_payload()
+            try:
+                payload = await self._token_provider.async_get_sync_payload()
+            except aiohttp.ClientError as err:
+                raise WardrowbeAuthError(f"Failed to refresh auth token: {err}") from err
             try:
                 async with self._session.post(
                     self._url(API_AUTH_SYNC),

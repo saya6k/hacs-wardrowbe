@@ -13,9 +13,10 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import WardrowbeApiError, WardrowbeClient
+from .api import WardrowbeApiError, WardrowbeAuthError, WardrowbeClient
 from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -84,6 +85,8 @@ class WardrowbeCoordinator(DataUpdateCoordinator[WardrowbeData]):
             outfits = await self.client.async_recent_outfits(limit=20)
             notifications = await self.client.async_recent_notifications(limit=50)
             items_to_wash = await self.client.async_items_needing_wash(limit=100)
+        except WardrowbeAuthError as err:
+            raise ConfigEntryAuthFailed(str(err)) from err
         except WardrowbeApiError as err:
             raise UpdateFailed(str(err)) from err
 
