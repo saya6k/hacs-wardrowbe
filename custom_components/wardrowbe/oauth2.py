@@ -6,7 +6,7 @@ provides:
 
 * ``WardrowbeOAuth2Implementation`` — a per-entry ``LocalOAuth2Implementation``
   parameterised with discovered endpoint URLs, the requested scopes, and an
-  optional PKCE branch for public clients that have no client_secret.
+  optional PKCE branch, independent of whether the client has a secret.
 * ``discover_oidc_endpoints`` — fetches ``.well-known/openid-configuration``.
 * ``OIDCTokenProvider`` — adapts an HA-managed ``OAuth2Session`` to the
   ``TokenProvider`` interface used by ``WardrowbeClient``.
@@ -39,10 +39,12 @@ class WardrowbeOAuth2Implementation(
 ):
     """Per-issuer OAuth2 implementation with optional PKCE.
 
-    If ``client_secret`` is empty/None, the implementation behaves as a public
-    client: a fresh ``code_verifier`` is generated per authorize step, hashed
-    into a ``code_challenge`` (S256), and the verifier is sent at the token
-    exchange in place of a client_secret.
+    PKCE and having a ``client_secret`` are independent: a confidential
+    client (has a secret) can still use PKCE — OAuth 2.1 recommends PKCE for
+    every client type, not just public ones — so ``use_pkce`` is an explicit
+    flag, not inferred from whether ``client_secret`` is set. Public clients
+    (no secret) must set ``use_pkce=True``; there's no other way for them to
+    authenticate the code exchange.
     """
 
     def __init__(
@@ -52,15 +54,14 @@ class WardrowbeOAuth2Implementation(
         domain: str,
         client_id: str,
         client_secret: str | None,
+        use_pkce: bool,
         authorize_url: str,
         token_url: str,
         issuer_url: str,
         name: str,
         scopes: str = DEFAULT_OIDC_SCOPES,
     ) -> None:
-        # LocalOAuth2Implementation expects ``client_secret: str``. For PKCE
-        # public clients we pass an empty string and override _token_request
-        # to omit it entirely from token exchanges and refreshes.
+        # LocalOAuth2Implementation expects ``client_secret: str``.
         super().__init__(
             hass,
             domain,
@@ -72,7 +73,7 @@ class WardrowbeOAuth2Implementation(
         self._issuer_url = issuer_url
         self._display_name = name
         self._scopes = scopes
-        self._use_pkce = not client_secret
+        self._use_pkce = use_pkce
         self._pkce_verifiers: dict[str, str] = {}
 
     @property
@@ -160,15 +161,18 @@ class WardrowbeOAuth2Implementation(
             return cast(
                 dict[str, Any], await super()._token_request(data)  # type: ignore[misc]
             )
-        # PKCE path: send client_id but never client_secret.
+        # PKCE path: send client_id, plus client_secret if this is a
+        # confidential client also using PKCE (not just public clients).
         session = async_get_clientsession(self.hass)
         # Start from a clean dict so we don't accidentally inherit keys meant
-        # only for the parent implementation (e.g. ``client_secret``).
+        # only for the parent implementation.
         request_data: dict[str, Any] = {}
         for key, value in data.items():
             if value is not None and value != "":
                 request_data[key] = value
         request_data["client_id"] = self.client_id
+        if self.client_secret:
+            request_data["client_secret"] = self.client_secret
         _LOGGER.debug("PKCE token request to %s", self.token_url)
         async with session.post(
             self.token_url,

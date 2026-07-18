@@ -58,6 +58,7 @@ from .const import (
     CONF_ISSUER_URL,
     CONF_SCOPES,
     CONF_TOKEN_URL,
+    CONF_USE_PKCE,
     CONF_USER_ID,
     CONF_USER_NAME,
     CONF_VERIFY_SSL,
@@ -85,6 +86,7 @@ class WardrowbeConfigFlow(
         self._issuer_url: str | None = None
         self._client_id: str | None = None
         self._client_secret: str | None = None
+        self._use_pkce: bool = True
         self._scopes: str = DEFAULT_OIDC_SCOPES
         self._authorize_url: str | None = None
         self._token_url: str | None = None
@@ -212,25 +214,35 @@ class WardrowbeConfigFlow(
                     self._client_secret = raw_secret
                 elif self._reauth_entry is None and self._reconfigure_entry is None:
                     self._client_secret = None
+                use_pkce = user_input.get(CONF_USE_PKCE, self._use_pkce)
                 self._scopes = user_input.get(CONF_SCOPES) or DEFAULT_OIDC_SCOPES
 
-                impl = WardrowbeOAuth2Implementation(
-                    self.hass,
-                    domain=self._impl_id(self._host),
-                    client_id=self._client_id,
-                    client_secret=self._client_secret,
-                    authorize_url=self._authorize_url,
-                    token_url=self._token_url,
-                    issuer_url=issuer,
-                    name=f"Wardrowbe @ {urlparse(self._host).netloc}",
-                    scopes=self._scopes,
-                )
-                config_entry_oauth2_flow.async_register_implementation(
-                    self.hass, DOMAIN, impl
-                )
-                return await self.async_step_pick_implementation(
-                    user_input={"implementation": impl.domain}
-                )
+                # A confidential client can still opt into PKCE (OAuth 2.1
+                # recommends it for every client type), but a public client
+                # (no secret) has no other way to authenticate the code
+                # exchange, so it can't opt out.
+                if not use_pkce and not self._client_secret:
+                    errors["base"] = "pkce_required_without_secret"
+                else:
+                    self._use_pkce = use_pkce
+                    impl = WardrowbeOAuth2Implementation(
+                        self.hass,
+                        domain=self._impl_id(self._host),
+                        client_id=self._client_id,
+                        client_secret=self._client_secret,
+                        use_pkce=self._use_pkce,
+                        authorize_url=self._authorize_url,
+                        token_url=self._token_url,
+                        issuer_url=issuer,
+                        name=f"Wardrowbe @ {urlparse(self._host).netloc}",
+                        scopes=self._scopes,
+                    )
+                    config_entry_oauth2_flow.async_register_implementation(
+                        self.hass, DOMAIN, impl
+                    )
+                    return await self.async_step_pick_implementation(
+                        user_input={"implementation": impl.domain}
+                    )
 
         schema = vol.Schema(
             {
@@ -238,10 +250,11 @@ class WardrowbeConfigFlow(
                     TextSelectorConfig(type=TextSelectorType.URL)
                 ),
                 vol.Required(CONF_CLIENT_ID, default=self._client_id or ""): str,
-                # Optional — leave blank for PKCE public clients.
+                # Optional — leave blank for public clients.
                 vol.Optional(CONF_CLIENT_SECRET, default=""): TextSelector(
                     TextSelectorConfig(type=TextSelectorType.PASSWORD)
                 ),
+                vol.Required(CONF_USE_PKCE, default=self._use_pkce): BooleanSelector(),
                 vol.Optional(CONF_SCOPES, default=self._scopes): str,
             }
         )
@@ -290,6 +303,7 @@ class WardrowbeConfigFlow(
                 CONF_TOKEN_URL: self._token_url,
                 CONF_CLIENT_ID: self._client_id,
                 CONF_CLIENT_SECRET: self._client_secret,
+                CONF_USE_PKCE: self._use_pkce,
                 CONF_SCOPES: self._scopes,
                 "token": token,
                 "auth_implementation": data.get("auth_implementation"),
@@ -312,6 +326,7 @@ class WardrowbeConfigFlow(
         self._token_url = existing.get(CONF_TOKEN_URL)
         self._client_id = existing.get(CONF_CLIENT_ID)
         self._client_secret = existing.get(CONF_CLIENT_SECRET)
+        self._use_pkce = existing.get(CONF_USE_PKCE, not self._client_secret)
         self._scopes = existing.get(CONF_SCOPES, DEFAULT_OIDC_SCOPES)
         return await self.async_step_reauth_confirm()
 
@@ -322,7 +337,7 @@ class WardrowbeConfigFlow(
             return self.async_show_form(step_id="reauth_confirm")
         if self._auth_mode == AUTH_MODE_DEV:
             return await self.async_step_dev()
-        # client_secret is intentionally allowed to be missing (PKCE public clients).
+        # client_secret is intentionally allowed to be missing (public clients).
         if not all(
             (
                 self._host,
@@ -337,7 +352,8 @@ class WardrowbeConfigFlow(
             self.hass,
             domain=self._impl_id(self._host or ""),
             client_id=self._client_id or "",
-            client_secret=self._client_secret,  # may be None for PKCE
+            client_secret=self._client_secret,  # may be None for public clients
+            use_pkce=self._use_pkce,
             authorize_url=self._authorize_url or "",
             token_url=self._token_url or "",
             issuer_url=self._issuer_url or "",
@@ -367,6 +383,7 @@ class WardrowbeConfigFlow(
         self._token_url = existing.get(CONF_TOKEN_URL)
         self._client_id = existing.get(CONF_CLIENT_ID)
         self._client_secret = existing.get(CONF_CLIENT_SECRET)
+        self._use_pkce = existing.get(CONF_USE_PKCE, not self._client_secret)
         self._scopes = existing.get(CONF_SCOPES, DEFAULT_OIDC_SCOPES)
         # Reuse the initial "user" step so host/auth_mode/verify_ssl (and, via
         # the dev/oidc steps it leads to, everything else) are all editable —
