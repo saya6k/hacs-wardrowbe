@@ -12,11 +12,12 @@
       },
       "oidc": {
         "title": "Wardrowbe — OIDC",
-        "description": "Provide the OIDC issuer URL and a client registered for Home Assistant. The integration will discover authorize/token URLs automatically. Leave the client secret blank if your OIDC client is registered as a public client using PKCE.",
+        "description": "Provide the OIDC issuer URL and a client registered for Home Assistant. The integration will discover authorize/token URLs automatically. Leave the client secret blank if your OIDC client is registered as a public client — it must use PKCE in that case. A confidential client (with a secret) can also use PKCE if your provider supports it.",
         "data": {
           "issuer_url": "OIDC issuer URL",
           "client_id": "Client ID",
-          "client_secret": "Client secret (leave blank for PKCE)",
+          "client_secret": "Client secret (leave blank for a public client)",
+          "use_pkce": "Use PKCE",
           "scopes": "Scopes"
         }
       },
@@ -36,7 +37,8 @@
       "invalid_host": "Host must be a full URL including scheme (http:// or https://).",
       "cannot_connect": "Could not reach Wardrowbe.",
       "auth_failed": "Authentication failed.",
-      "issuer_discovery_failed": "Could not load .well-known/openid-configuration from the issuer."
+      "issuer_discovery_failed": "Could not load .well-known/openid-configuration from the issuer.",
+      "pkce_required_without_secret": "A public client (no client secret) must use PKCE."
     },
     "abort": {
       "already_configured": "This Wardrowbe account is already configured.",

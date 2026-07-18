@@ -30,6 +30,7 @@ from .const import (
     CONF_ISSUER_URL,
     CONF_SCOPES,
     CONF_TOKEN_URL,
+    CONF_USE_PKCE,
     CONF_VERIFY_SSL,
     DOMAIN,
 )
@@ -68,13 +69,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: WardrowbeConfigEntry) ->
 
     token_provider: TokenProvider
     if auth_mode == AUTH_MODE_OIDC:
-        # client_secret may be missing/empty for PKCE public clients.
+        # client_secret may be missing/empty for public clients.
         stored_secret = entry.data.get(CONF_CLIENT_SECRET)
         implementation = WardrowbeOAuth2Implementation(
             hass,
             domain=DOMAIN,
             client_id=entry.data[CONF_CLIENT_ID],
             client_secret=stored_secret if stored_secret else None,
+            # Entries created before CONF_USE_PKCE existed have no stored
+            # value — fall back to the old client_secret-implies-PKCE rule.
+            use_pkce=entry.data.get(CONF_USE_PKCE, not stored_secret),
             authorize_url=entry.data[CONF_AUTHORIZE_URL],
             token_url=entry.data[CONF_TOKEN_URL],
             issuer_url=entry.data[CONF_ISSUER_URL],

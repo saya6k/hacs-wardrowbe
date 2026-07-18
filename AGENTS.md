@@ -113,13 +113,15 @@ Wardrowbe accepts any OIDC issuer, so authorize/token URLs are not known until c
 2. Register a `WardrowbeOAuth2Implementation` per host (`config_entry_oauth2_flow.async_register_implementation`) — id is `wardrowbe_<sha1(host)[:10]>`, so multiple accounts on the same host share an impl.
 3. After setup, `__init__.async_setup_entry` rebuilds the implementation from `entry.data` and feeds it to `OAuth2Session` for refreshes.
 
-### PKCE (public clients without a secret)
+### PKCE
 
-`WardrowbeOAuth2Implementation` switches to PKCE when `client_secret` is empty/None. In that mode it overrides three pieces of `LocalOAuth2Implementation`:
+`WardrowbeOAuth2Implementation` takes an explicit `use_pkce: bool` constructor arg — it is **not** derived from whether `client_secret` is set. A confidential client (has a secret) can opt into PKCE too, per OAuth 2.1's recommendation to use it for every client type; only a public client (no secret) is *required* to (`config_flow.py`'s `async_step_oidc` rejects `use_pkce=False` with no secret via the `pkce_required_without_secret` error, since a public client has no other way to authenticate the code exchange). Legacy entries created before `CONF_USE_PKCE` existed have no stored value, so every read site (`__init__.async_setup_entry`, `async_step_reauth`, `async_step_reconfigure`) falls back to the old inferred rule, `not client_secret`.
+
+When `use_pkce` is true, the implementation overrides three pieces of `LocalOAuth2Implementation`:
 
 - `async_generate_authorize_url` — generates a fresh `code_verifier` (`secrets.token_urlsafe(64)`), stores it keyed by `flow_id` on the implementation, and appends `code_challenge` (SHA-256, base64url, no padding) + `code_challenge_method=S256` to the authorize URL.
 - `async_resolve_external_data` — pops the verifier for the flow and includes it as `code_verifier` in the token request body. The decoded state's `flow_id` keys the lookup, so concurrent flows do not collide.
-- `_token_request` — never sends `client_secret` on the PKCE branch (token-exchange and refresh both go through this method).
+- `_token_request` — builds the token request manually on this branch (token-exchange and refresh both go through it), and includes `client_secret` too whenever one is set — PKCE no longer implies its absence.
 
 The PKCE state lives only in process memory on the implementation instance — verifiers are never persisted to disk. If the integration reloads mid-flow, the user re-runs the config flow.
 
