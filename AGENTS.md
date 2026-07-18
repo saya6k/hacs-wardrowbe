@@ -26,7 +26,7 @@ ha_wardrowbe/
 │   ├── api.py                  # WardrowbeClient + TokenProvider implementations
 │   ├── oauth2.py               # WardrowbeOAuth2Implementation, OIDCTokenProvider, discovery
 │   ├── coordinator.py          # DataUpdateCoordinator, diff → pending_events + bus events
-│   ├── config_flow.py          # multi-step flow (host → oidc/dev), reauth
+│   ├── config_flow.py          # multi-step flow (host → oidc/dev), reauth, reconfigure
 │   ├── entity.py               # WardrowbeEntity base (device + unique_id)
 │   ├── sensor.py / binary_sensor.py / event.py
 │   ├── services.py / services.yaml
@@ -123,6 +123,10 @@ Wardrowbe accepts any OIDC issuer, so authorize/token URLs are not known until c
 
 The PKCE state lives only in process memory on the implementation instance — verifiers are never persisted to disk. If the integration reloads mid-flow, the user re-runs the config flow.
 
+### Reconfigure
+
+`async_step_reconfigure` pre-fills instance state from the entry being reconfigured and forwards straight into `async_step_user`, reusing the same `user → dev`/`oidc` steps as initial setup — so it's the one path where the OIDC issuer/client/secret/scopes and the host/auth mode are all editable together, unlike `async_step_reauth` which only replays the stored OIDC config to get a fresh token. `_finalise_entry` resolves `self._reauth_entry or self._reconfigure_entry` to decide whether to create a new entry or update-and-reload an existing one. A blank client-secret field is only treated as "switch to PKCE" on fresh setup (no reauth/reconfigure entry set) — during reauth or reconfigure it means "didn't retype it" and the previously stored secret is kept, so don't remove that branch without preserving the distinction.
+
 ## Local development & testing
 
 The repo is laid out so a fresh devcontainer is the only setup step you need.
@@ -148,12 +152,15 @@ Not viable until 2026.8.0b0 ships on PyPI: `scripts/setup` now only installs tes
 3. Pick **Development mode** with a stub `external_id` against a local Wardrowbe instance, or **OIDC** against your real provider.
 4. Watch `config/home-assistant.log` for `custom_components.wardrowbe` lines (DEBUG enabled by `scripts/setup`).
 5. To verify the LLM API: **Settings → Voice assistants**, edit (or add) a conversation agent, and confirm **Wardrowbe — `<account title>`** appears in its LLM API selector. Attach it and confirm the ten tools resolve (e.g. ask it to suggest an outfit). With two Wardrowbe entries configured, confirm two separate APIs appear.
+6. To verify reconfigure: on the entry's card, **⋮ → Reconfigure**, change something (e.g. toggle `verify_ssl`), and confirm it lands on the same `user`/`dev`/`oidc` steps pre-filled with the entry's current values, then aborts with "reconfiguration successful" and reloads without creating a duplicate entry.
 
 ### Unit tests
 
 `pytest-homeassistant-custom-component` provides the `hass` fixture and HA test infrastructure. Use `MockConfigEntry` from `pytest_homeassistant_custom_component.common`. The fixtures in `tests/conftest.py` (`dev_mode_entry`, `mock_client`, `mock_analytics`) are the building blocks for new tests.
 
-OIDC config-flow paths are not yet covered — adding coverage requires `aioclient_mock` + `current_request_with_proxy`. See HA core's `tests/components/spotify` for a worked example.
+`tests/conftest.py` also carries a compat shim: the newest `pytest-homeassistant-custom-component` release on PyPI (`0.13.346`) hard-pins `homeassistant==2026.7.2`, and its autouse `disable_http_server` fixture patches an attribute HA core dropped in the 2026.8 dev-nightly this repo is pinned to — without the shim, every test errors at setup. It's a no-op restore guarded by `hasattr`, so it self-disables once a compatible release ships; don't remove it until `tests/requirements_test.txt` moves off `0.13.346`.
+
+OIDC config-flow paths (the full OAuth dance — happy path, reauth, reconfigure) are not yet covered — adding coverage requires `aioclient_mock` + `current_request_with_proxy`. See HA core's `tests/components/spotify` for a worked example. Dev-mode reconfigure has coverage (`test_dev_mode_reconfigure`), since it doesn't need the OAuth dance.
 
 ## Release workflow
 
