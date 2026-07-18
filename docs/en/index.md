@@ -83,6 +83,10 @@ Pick **Development mode** in step 1 and enter the `external_id` you log in with 
 
 Run the **Add Integration** flow once per account. Each entry creates its own device, sensors, event entities, and shows up in the `config_entry_id` selector for service calls.
 
+### Reconfiguring
+
+Open **Settings → Devices & Services → Wardrowbe → ⋮ → Reconfigure** on an existing entry to change its host, `verify_ssl`, auth mode, or (for OIDC) issuer/client ID/client secret/scopes — no need to remove and re-add it. Leaving the client secret blank keeps whatever was already stored; it only switches to PKCE if the entry didn't have a secret to begin with.
+
 ## Automations
 
 #### Notify when a new outfit is suggested

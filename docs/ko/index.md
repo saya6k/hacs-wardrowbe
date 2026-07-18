@@ -83,6 +83,10 @@ Home Assistant용 OIDC 클라이언트를 프로바이더에 등록해야 합니
 
 계정마다 **통합 추가** 플로를 한 번씩 실행. 각 entry는 자체 device, sensor, event 엔티티를 만들고, 서비스 호출의 `config_entry_id` 선택지에 나타납니다.
 
+### 재구성
+
+기존 entry의 **Settings → Devices & Services → Wardrowbe → ⋮ → Reconfigure**에서 host, `verify_ssl`, 인증 모드, (OIDC의 경우) issuer/client ID/client secret/scope를 삭제 후 재등록 없이 변경할 수 있습니다. client secret을 비워두면 기존에 저장된 값이 유지되며, 원래 secret이 없던 entry에서만 PKCE로 전환됩니다.
+
 ## 자동화
 
 #### 새 아웃핏 제안 시 알림

@@ -94,6 +94,10 @@ Pick **Development mode** in step 1 and enter the `external_id` you log in with 
 
 Run the **Add Integration** flow once per account. Each entry creates its own device, sensors, event entities, and shows up in the `config_entry_id` selector for service calls.
 
+### Reconfiguring
+
+Open **Settings → Devices & Services → Wardrowbe → ⋮ → Reconfigure** on an existing entry to change its host, `verify_ssl`, auth mode, or (for OIDC) issuer/client ID/client secret/scopes — no need to remove and re-add it. Leaving the client secret blank keeps whatever was already stored; it only switches to PKCE if the entry didn't have a secret to begin with.
+
 ### Voice assistant / LLM tools
 
 Each Wardrowbe account registers its own LLM API — **Wardrowbe — `<account title>`** — that you attach explicitly to a conversation agent; it's never enabled automatically. In **Settings → Voice assistants**, edit an agent, and pick it from the LLM API selector to give that agent ten tools covering outfit suggestions, wardrobe stats, and wash tracking. With multiple accounts, each gets its own selectable API. It's also reachable over MCP at `/api/mcp/wardrowbe__<entry_id>` with an HA admin access token, if you're driving Wardrowbe from an external MCP client instead of HA's own conversation agents.
