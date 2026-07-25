@@ -60,7 +60,7 @@ scripts/develop          # HA on :8123 with the integration symlinked in
 scripts/test             # ruff + mypy + pytest
 ```
 
-See [`AGENTS.md`](AGENTS.md) for the full dev/test workflow.
+VS Code → "Reopen in Container" picks up `.devcontainer/devcontainer.json` and runs `scripts/setup` for you. `scripts/test` forwards extra arguments to pytest (e.g. `scripts/test tests/test_config_flow.py`), and the integration logs to `config/home-assistant.log` at DEBUG level.
 
 ## Configuration
 
