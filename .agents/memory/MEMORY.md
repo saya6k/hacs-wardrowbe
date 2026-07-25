@@ -1,4 +1,0 @@
-- [service-guard-pattern](service-guard-pattern.md) — New service handlers must be wrapped with `_guard()`
-- [strings-json-parity](strings-json-parity.md) — `strings.json` and `translations/*.json` must have identical key trees
-- [ship-pr-workflow](ship-pr-workflow.md) — Branch → hacs-preflight → conventional-commit → push → gh pr create
-- [agents-sot-structure](agents-sot-structure.md) — Track AGENTS.md + .agents/ + .claude/settings.json only; other scaffolding is local-only (recreate after cross-boundary checkouts)

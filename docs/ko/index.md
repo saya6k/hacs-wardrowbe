@@ -60,7 +60,7 @@ scripts/develop          # 통합을 symlink한 채 HA를 :8123에서 실행
 scripts/test             # ruff + mypy + pytest
 ```
 
-전체 개발/테스트 워크플로는 [`AGENTS.md`](AGENTS.md) 참조.
+VS Code → "Reopen in Container"를 선택하면 `.devcontainer/devcontainer.json`이 적용되며 `scripts/setup`이 자동 실행됩니다. `scripts/test`는 추가 인자를 pytest로 그대로 전달하고(예: `scripts/test tests/test_config_flow.py`), 통합 로그는 DEBUG 레벨로 `config/home-assistant.log`에 기록됩니다.
 
 ## 구성
 

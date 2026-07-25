@@ -23,11 +23,12 @@ from custom_components.wardrowbe.const import (
 # pytest-homeassistant-custom-component==0.13.346's autouse disable_http_server
 # fixture patches homeassistant.components.http.start_http_server_and_save_config
 # to stop tests from binding a real HTTP server. HA core removed that name in
-# the 2026.8 dev-nightly this repo's devcontainer is pinned to (see AGENTS.md's
-# floor note), so the patch() call raises AttributeError before any test body
-# runs. No pytest-homeassistant-custom-component release supports the 2026.8
-# cycle yet, so restore the attribute as a no-op here; drop this once a
-# compatible release ships and tests/requirements_test.txt moves to it.
+# the 2026.8 dev-nightly this repo's devcontainer is pinned to (see
+# .devcontainer/devcontainer.json), so the patch() call raises AttributeError
+# before any test body runs. No pytest-homeassistant-custom-component release
+# supports the 2026.8 cycle yet, so restore the attribute as a no-op here; drop
+# this once a compatible release ships and tests/requirements_test.txt moves to
+# it.
 if not hasattr(_ha_http, "start_http_server_and_save_config"):
 
     async def _start_http_server_and_save_config(*_args: object, **_kwargs: object) -> None:
