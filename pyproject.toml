@@ -34,6 +34,13 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["ANN", "PL", "S"]
+# _diff walks outfits, feedback, wash and wear state in one pass over a single
+# refresh so the events it emits stay ordered and the "primed" bookkeeping is
+# done once; splitting it per collection would duplicate that state handling.
+"custom_components/wardrowbe/coordinator.py" = ["PLR0912", "PLR0915"]
+# The OAuth2 implementation takes the OIDC endpoints and credentials as
+# independent keyword arguments, mirroring LocalOAuth2Implementation.
+"custom_components/wardrowbe/oauth2.py" = ["PLR0913"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["custom_components.wardrowbe"]

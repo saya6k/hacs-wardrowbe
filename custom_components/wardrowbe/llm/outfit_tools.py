@@ -8,8 +8,9 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import llm
 
-from ..api import WardrowbeApiError
-from ..const import VALID_OCCASIONS, VALID_TIME_OF_DAY
+from custom_components.wardrowbe.api import WardrowbeApiError
+from custom_components.wardrowbe.const import VALID_OCCASIONS, VALID_TIME_OF_DAY
+
 from .base_tool import BaseWardrowbeTool
 from .render import extract_image_url, outfit_to_results
 

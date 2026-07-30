@@ -20,5 +20,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
   validate:
     uses: ./.github/workflows/validate.yml

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, patch
 
 import homeassistant.components.http as _ha_http
@@ -84,7 +84,7 @@ def dev_mode_entry() -> MockConfigEntry:
 @pytest.fixture
 async def mock_client(
     mock_session_info: dict[str, str], mock_analytics: dict[str, object]
-) -> AsyncGenerator[AsyncMock, None]:
+) -> AsyncGenerator[AsyncMock]:
     """Patch WardrowbeClient with an AsyncMock that returns canned data."""
     with patch(
         "custom_components.wardrowbe.WardrowbeClient", autospec=True

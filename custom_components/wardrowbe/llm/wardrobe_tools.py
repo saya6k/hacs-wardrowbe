@@ -8,8 +8,9 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import llm
 
-from ..api import WardrowbeApiError
-from ..const import EVENT_GROUP_WASH
+from custom_components.wardrowbe.api import WardrowbeApiError
+from custom_components.wardrowbe.const import EVENT_GROUP_WASH
+
 from .base_tool import BaseWardrowbeTool
 from .render import extract_image_url, svg_summary
 

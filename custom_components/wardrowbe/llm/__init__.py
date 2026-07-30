@@ -16,7 +16,8 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.llm import LLMContext
 
-from ..const import DOMAIN
+from custom_components.wardrowbe.const import DOMAIN
+
 from .const import API_PROMPT
 from .tools import TOOL_FACTORIES
 

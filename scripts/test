@@ -1,8 +1,22 @@
 #!/usr/bin/env bash
 # Lint, type-check, and run the unit-test suite.
+#
+# pytest runs from .venv-test, a separate virtualenv holding the phacc test
+# stack. It lives apart from the interpreter running Home Assistant because
+# phacc pins homeassistant==2026.7.4 and would otherwise downgrade the
+# 2026.8.0b0 core (see tests/requirements_test.txt). The 2026.8-only LLM
+# platform tests skip themselves on that stack.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+
+TEST_VENV=.venv-test
+if [ ! -x "$TEST_VENV/bin/pytest" ]; then
+  echo "── creating $TEST_VENV ─────────────────────────────"
+  python3 -m venv "$TEST_VENV"
+  "$TEST_VENV/bin/pip" install --quiet --upgrade pip
+  "$TEST_VENV/bin/pip" install --quiet -r tests/requirements_test.txt
+fi
 
 echo "── ruff ────────────────────────────────────────────"
 ruff check .
@@ -13,4 +27,4 @@ mypy custom_components/wardrowbe || {
 }
 
 echo "── pytest ──────────────────────────────────────────"
-pytest "$@"
+"$TEST_VENV/bin/pytest" "$@"

@@ -9,10 +9,10 @@ can use ``response_variable`` in scripts/automations.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import (
     HomeAssistant,
@@ -24,7 +24,6 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 
 from .api import WardrowbeApiError, WardrowbeClient
-from .coordinator import WardrowbeCoordinator
 from .const import (
     ACTIONABLE_OUTFIT_STATUSES,
     ATTR_CONFIG_ENTRY_ID,
@@ -47,12 +46,12 @@ from .const import (
     EVENT_GROUP_WEAR,
     SERVICE_ACCEPT_OUTFIT,
     SERVICE_ARCHIVE_ITEM,
+    SERVICE_GET_SUMMARY,
     SERVICE_LOG_WASH,
     SERVICE_LOG_WEAR,
     SERVICE_REJECT_OUTFIT,
     SERVICE_RESTORE_ITEM,
     SERVICE_SKIP_OUTFIT,
-    SERVICE_GET_SUMMARY,
     SERVICE_SUBMIT_FEEDBACK,
     SERVICE_SUGGEST_OUTFIT,
     SERVICE_TEST_NOTIFICATION,
@@ -60,6 +59,7 @@ from .const import (
     VALID_OUTFIT_STATUSES,
     VALID_TIME_OF_DAY,
 )
+from .coordinator import WardrowbeCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -222,7 +222,12 @@ def _resolve_runtime(
     return runtime.client, runtime.coordinator
 
 
-def _guard(handler):
+# Every service handler is an async callable taking the ServiceCall; the ones
+# registered with SupportsResponse return a ServiceResponse, the rest None.
+_ServiceHandler = Callable[[ServiceCall], Coroutine[Any, Any, ServiceResponse | None]]
+
+
+def _guard(handler: _ServiceHandler) -> _ServiceHandler:
     """Wrap a service handler to prevent ServiceValidationError from reaching aiohttp.
 
     When a config entry is removed while automations/scripts still reference it,
@@ -236,7 +241,7 @@ def _guard(handler):
     the log being flooded.
     """
 
-    async def _wrapped(call: ServiceCall):
+    async def _wrapped(call: ServiceCall) -> ServiceResponse | None:
         try:
             return await handler(call)
         except ServiceValidationError as err:
@@ -290,7 +295,7 @@ def _text_ai_disabled(coordinator: WardrowbeCoordinator) -> bool:
     return isinstance(ai, dict) and ai.get("text") is False
 
 
-def _make_suggest_handler(hass: HomeAssistant):
+def _make_suggest_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> ServiceResponse:
         client, coordinator = _resolve_runtime(hass, call)
         if _text_ai_disabled(coordinator):
@@ -316,7 +321,7 @@ def _make_suggest_handler(hass: HomeAssistant):
     return _handle
 
 
-def _make_outfit_action_handler(hass: HomeAssistant, action: str):
+def _make_outfit_action_handler(hass: HomeAssistant, action: str) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> None:
         client, coordinator = _resolve_runtime(hass, call)
         outfit_id = call.data.get(ATTR_OUTFIT_ID) or _resolve_latest_pending_outfit(
@@ -331,7 +336,7 @@ def _make_outfit_action_handler(hass: HomeAssistant, action: str):
     return _handle
 
 
-def _make_feedback_handler(hass: HomeAssistant):
+def _make_feedback_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> ServiceResponse:
         client, coordinator = _resolve_runtime(hass, call)
         outfit_id = call.data[ATTR_OUTFIT_ID]
@@ -360,7 +365,7 @@ def _make_feedback_handler(hass: HomeAssistant):
     return _handle
 
 
-def _make_log_wear_handler(hass: HomeAssistant):
+def _make_log_wear_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> None:
         client, coordinator = _resolve_runtime(hass, call)
         payload: dict[str, Any] = {}
@@ -379,7 +384,7 @@ def _make_log_wear_handler(hass: HomeAssistant):
     return _handle
 
 
-def _make_log_wash_handler(hass: HomeAssistant):
+def _make_log_wash_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> None:
         client, coordinator = _resolve_runtime(hass, call)
         item_id = call.data[ATTR_ITEM_ID]
@@ -410,7 +415,7 @@ def _wash_wear_event_payload(item_id: str, result: Any) -> dict[str, Any]:
     return payload
 
 
-def _make_archive_handler(hass: HomeAssistant):
+def _make_archive_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> None:
         client, coordinator = _resolve_runtime(hass, call)
         try:
@@ -424,7 +429,7 @@ def _make_archive_handler(hass: HomeAssistant):
     return _handle
 
 
-def _make_restore_handler(hass: HomeAssistant):
+def _make_restore_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> None:
         client, coordinator = _resolve_runtime(hass, call)
         try:
@@ -436,7 +441,7 @@ def _make_restore_handler(hass: HomeAssistant):
     return _handle
 
 
-def _make_get_summary_handler(hass: HomeAssistant):
+def _make_get_summary_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> ServiceResponse:
         _, coordinator = _resolve_runtime(hass, call)
         data = coordinator.data
@@ -491,7 +496,7 @@ def _filter_outfits(
     return result
 
 
-def _make_test_notification_handler(hass: HomeAssistant):
+def _make_test_notification_handler(hass: HomeAssistant) -> _ServiceHandler:
     async def _handle(call: ServiceCall) -> None:
         client = _resolve_client(hass, call)
         try:
