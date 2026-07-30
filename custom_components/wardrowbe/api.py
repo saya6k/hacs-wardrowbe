@@ -16,7 +16,7 @@ import base64
 import binascii
 import json
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -300,7 +300,7 @@ class WardrowbeClient:
 
     async def _ensure_jwt(self, *, force: bool = False) -> str:
         async with self._sync_lock:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             if (
                 not force
                 and self._jwt

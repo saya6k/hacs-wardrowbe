@@ -167,9 +167,12 @@ class WardrowbeCoordinator(DataUpdateCoordinator[WardrowbeData]):
             # coordinator first sees the outfit.
             if previous is None and status in {"sent", "pending"}:
                 events.append(PendingEvent(EVENT_GROUP_OUTFIT, "suggested", outfit))
-            elif previous is not None and previous != status and status:
-                if status in {"accepted", "rejected", "skipped"}:
-                    events.append(PendingEvent(EVENT_GROUP_OUTFIT, status, outfit))
+            elif (
+                previous is not None
+                and previous != status
+                and status in {"accepted", "rejected", "skipped"}
+            ):
+                events.append(PendingEvent(EVENT_GROUP_OUTFIT, status, outfit))
             previous_feedback = self._known_outfit_feedback.get(oid)
             if (
                 previous_feedback is not None

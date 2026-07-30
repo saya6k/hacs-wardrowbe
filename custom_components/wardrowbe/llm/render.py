@@ -10,7 +10,8 @@ synthesise a small SVG card and emit it as a ``data:`` URL.
 from __future__ import annotations
 
 import base64
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 _FONT = (
     "system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',"

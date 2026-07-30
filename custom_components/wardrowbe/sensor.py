@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -103,6 +104,22 @@ def _normalize_top_color(data: WardrowbeData) -> str | None:
     key = str(raw).strip().lower()
     key = _TOP_COLOR_ALIASES.get(key, key)
     return key if key in TOP_COLOR_OPTIONS else None
+
+
+def _count_recent_notifications(data: WardrowbeData) -> int:
+    cutoff = datetime.now(UTC) - timedelta(hours=24)
+    count = 0
+    for note in data.notifications:
+        ts = note.get("created_at") or note.get("sent_at") or note.get("timestamp")
+        if not ts:
+            continue
+        try:
+            parsed = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if parsed >= cutoff:
+            count += 1
+    return count
 
 
 SENSORS: tuple[WardrowbeSensorDescription, ...] = (
@@ -209,27 +226,9 @@ SENSORS: tuple[WardrowbeSensorDescription, ...] = (
         translation_key="notifications_last_24h",
         icon="mdi:bell-outline",
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda d: _count_recent_notifications(d),
+        value_fn=_count_recent_notifications,
     ),
 )
-
-
-def _count_recent_notifications(data: WardrowbeData) -> int:
-    from datetime import datetime, timedelta, timezone
-
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
-    count = 0
-    for note in data.notifications:
-        ts = note.get("created_at") or note.get("sent_at") or note.get("timestamp")
-        if not ts:
-            continue
-        try:
-            parsed = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
-        except ValueError:
-            continue
-        if parsed >= cutoff:
-            count += 1
-    return count
 
 
 async def async_setup_entry(

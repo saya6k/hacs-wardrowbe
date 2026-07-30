@@ -8,7 +8,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import llm
 
-from ..const import CONF_HOST
+from custom_components.wardrowbe.const import CONF_HOST
+
 from .const import SOURCE
 
 

@@ -5,12 +5,18 @@
 # pin chosen by this package, and you'll end up with the
 # `pytest>=8 vs pytest-asyncio<8` deadlock.
 #
-# Must match the devcontainer image tag (.devcontainer/devcontainer.json) —
-# one version string across both, now that 2026.8.0b0 has shipped and
-# hacs.json's end-user-facing floor, the image and this pin all read the same
-# release. Inside the devcontainer `homeassistant` is satisfied by the image's
-# preinstalled copy; phacc still pins homeassistant==2026.7.x, so a clean
-# resolve outside the image can't satisfy both (unchanged from the nightly
-# pin) and tests/conftest.py keeps its phacc compat shim.
+# Deliberately no `homeassistant` line: phacc pins one exact release itself
+# (0.13.348 -> homeassistant==2026.7.4), so naming a 2026.8 version here made
+# the file unresolvable — `pip install -r` failed with ResolutionImpossible
+# even inside the devcontainer where 2026.8.0b0 is already installed.
+# hacs.json's floor and the devcontainer image stay the 2026.8.0b0 source of
+# truth; this file only describes the test stack.
+#
+# Because of that pin, install this into its own virtualenv — not into the
+# devcontainer's site-packages, where it would downgrade the 2026.8.0b0 core
+# that scripts/develop runs:
+#   python3 -m venv .venv-test
+#   .venv-test/bin/pip install -r tests/requirements_test.txt
+# Tests that need HA 2026.8's `llm` integration skip themselves on that stack
+# (see tests/test_llm_tools.py); run them in the devcontainer against the beta.
 pytest-homeassistant-custom-component>=0.13.346
-homeassistant>=2026.8.0b0

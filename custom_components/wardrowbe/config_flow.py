@@ -24,7 +24,6 @@ from urllib.parse import urlparse
 
 import aiohttp
 import voluptuous as vol
-
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession

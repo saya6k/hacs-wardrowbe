@@ -17,7 +17,6 @@ from __future__ import annotations
 import logging
 
 from aiohttp import ClientError, web
-
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 

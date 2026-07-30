@@ -10,9 +10,11 @@ practice — but the platform-import test itself stays first for clarity.
 
 from __future__ import annotations
 
+import importlib.util
 import sys
 from unittest.mock import AsyncMock
 
+import pytest
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers import llm as ha_llm
 from homeassistant.setup import async_setup_component
@@ -22,6 +24,15 @@ from custom_components.wardrowbe.api import WardrowbeApiError
 from custom_components.wardrowbe.const import DOMAIN
 
 _PLATFORM_MODULE = "custom_components.wardrowbe.llm"
+
+# The tool platform imports homeassistant.components.llm, added in HA 2026.8.
+# pytest-homeassistant-custom-component pins an exact 2026.7.x core (see
+# tests/requirements_test.txt), so on that stack these tests can't run at all —
+# skip them there and let the devcontainer, pinned to 2026.8.0b0, cover them.
+requires_llm_integration = pytest.mark.skipif(
+    importlib.util.find_spec("homeassistant.components.llm") is None,
+    reason="needs Home Assistant 2026.8's llm integration",
+)
 
 
 def _api_id(entry_id: str) -> str:
@@ -74,6 +85,7 @@ async def test_setup_registers_per_entry_api_unload_unregisters(
     assert api_id not in apis_after
 
 
+@requires_llm_integration
 async def test_hook_opts_out_of_assist_and_unknown_ids(hass: HomeAssistant) -> None:
     from custom_components.wardrowbe.llm import async_get_tools
 
@@ -83,6 +95,7 @@ async def test_hook_opts_out_of_assist_and_unknown_ids(hass: HomeAssistant) -> N
     assert async_get_tools(hass, llm_context, f"{DOMAIN}__unknown-entry") is None
 
 
+@requires_llm_integration
 async def test_hook_returns_tool_set_for_loaded_entry_none_after_unload(
     hass: HomeAssistant,
     dev_mode_entry: MockConfigEntry,
@@ -117,6 +130,7 @@ async def test_hook_returns_tool_set_for_loaded_entry_none_after_unload(
     assert async_get_tools(hass, llm_context, api_id) is None
 
 
+@requires_llm_integration
 async def test_api_instance_end_to_end(
     hass: HomeAssistant,
     dev_mode_entry: MockConfigEntry,
@@ -138,6 +152,7 @@ async def test_api_instance_end_to_end(
     assert "wardrobe" in instance.api_prompt.lower()
 
 
+@requires_llm_integration
 async def test_suggest_outfit_tool_happy_path_and_error(
     hass: HomeAssistant,
     dev_mode_entry: MockConfigEntry,
