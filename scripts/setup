@@ -2,11 +2,10 @@
 # Wire this checkout into the devcontainer's baked-in Home Assistant install.
 #
 # The devcontainer base image (see .devcontainer/devcontainer.json) is the
-# official homeassistant/home-assistant image, pinned to a dev-branch nightly.
-# The image tag must match tests/requirements_test.txt's homeassistant pin —
-# one version string shared between the two. hacs.json's `homeassistant`
-# floor stays the end-user-facing 2026.8.0b0; move the image tag and
-# requirements pin to `>=2026.8.0b0` too once that beta ships.
+# official home-assistant image, pinned to the 2026.8.0b0 beta and pulled from
+# ghcr.io (Docker Hub carries no 2026.8 beta tag). The image tag must match
+# tests/requirements_test.txt's homeassistant pin and hacs.json's
+# `homeassistant` floor — one version string shared across the three.
 #
 # Unlike a generic Python devcontainer, the image already bundles HA core, the
 # frontend, and every native/runtime dependency default_config needs (ffmpeg,
