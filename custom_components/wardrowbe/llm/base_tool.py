@@ -8,13 +8,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import llm
 
-from custom_components.wardrowbe.const import CONF_HOST
+from custom_components.wardrowbe.const import CONF_HOST, DOMAIN
 
 from .const import SOURCE
 
 
 class BaseWardrowbeTool(llm.Tool):
     """Resolves the bound config entry's runtime_data on demand."""
+
+    integration = DOMAIN
 
     service: str = "wardrowbe"
 
@@ -39,8 +41,11 @@ class BaseWardrowbeTool(llm.Tool):
             return ""
         return str(entry.data.get(CONF_HOST, "")).rstrip("/")
 
-    def envelope(self, **fields: Any) -> dict[str, Any]:
-        return {"source": SOURCE, "service": self.service, **fields}
+    def envelope(self, **fields: Any) -> llm.ToolResult:
+        return llm.ToolResult(data={"source": SOURCE, "service": self.service, **fields})
 
-    def error(self, message: str) -> dict[str, Any]:
-        return {"source": SOURCE, "service": self.service, "error": message}
+    def error(self, message: str) -> llm.ToolResult:
+        return llm.ToolResult(
+            data={"source": SOURCE, "service": self.service, "error": message},
+            error=True,
+        )

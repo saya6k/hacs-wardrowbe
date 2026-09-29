@@ -25,13 +25,12 @@ from custom_components.wardrowbe.const import DOMAIN
 
 _PLATFORM_MODULE = "custom_components.wardrowbe.llm"
 
-# The tool platform imports homeassistant.components.llm, added in HA 2026.8.
-# pytest-homeassistant-custom-component pins an exact 2026.7.x core (see
-# tests/requirements_test.txt), so on that stack these tests can't run at all —
-# skip them there and let the devcontainer, pinned to 2026.8.0b0, cover them.
+# The isolated phacc test stack may pin an older HA release. Only the
+# HA 2026.10+ runtime can exercise the ToolResult contract.
 requires_llm_integration = pytest.mark.skipif(
-    importlib.util.find_spec("homeassistant.components.llm") is None,
-    reason="needs Home Assistant 2026.8's llm integration",
+    importlib.util.find_spec("homeassistant.components.llm") is None
+    or not hasattr(ha_llm, "ToolResult"),
+    reason="needs Home Assistant 2026.10 ToolResult",
 )
 
 
@@ -175,12 +174,48 @@ async def test_suggest_outfit_tool_happy_path_and_error(
     result = await tool.async_call(
         hass, ha_llm.ToolInput(tool_name=tool.name, tool_args={}), llm_context
     )
-    assert result["source"] == "wardrowbe"
-    assert "error" not in result
-    assert result["outfit"]["id"] == "outfit-1"
+    assert isinstance(result, ha_llm.ToolResult)
+    assert not result.error
+    assert result.data["source"] == "wardrowbe"
+    assert "error" not in result.data
+    assert result.data["outfit"]["id"] == "outfit-1"
 
     mock_client.async_suggest_outfit = AsyncMock(side_effect=WardrowbeApiError("boom"))
     error_result = await tool.async_call(
         hass, ha_llm.ToolInput(tool_name=tool.name, tool_args={}), llm_context
     )
-    assert "boom" in error_result["error"]
+    assert error_result.error
+    assert "boom" in error_result.data["error"]
+
+
+@requires_llm_integration
+async def test_tool_metadata_distinguishes_reads_and_writes(hass: HomeAssistant) -> None:
+    from custom_components.wardrowbe.llm.tools import TOOL_FACTORIES
+
+    for factory in TOOL_FACTORIES:
+        tool = factory(hass, "test-entry")
+        assert tool.integration == DOMAIN
+        assert tool.title
+        assert tool.annotations.read_only == tool.name.startswith("get_")
+        assert tool.annotations.open_world == (not tool.name.startswith("get_"))
+        if not tool.name.startswith("get_"):
+            assert not tool.annotations.idempotent
+
+
+@requires_llm_integration
+async def test_no_outfit_is_successful_empty_result(hass: HomeAssistant) -> None:
+    from types import SimpleNamespace
+    from unittest.mock import PropertyMock, patch
+
+    from custom_components.wardrowbe.llm.outfit_tools import GetLatestOutfitTool
+
+    tool = GetLatestOutfitTool(hass, "test-entry")
+    runtime = SimpleNamespace(coordinator=SimpleNamespace(data=SimpleNamespace(outfits=[])))
+    with patch.object(GetLatestOutfitTool, "runtime", new_callable=PropertyMock) as prop:
+        prop.return_value = runtime
+        result = await tool.async_call(
+            hass, ha_llm.ToolInput(tool_name=tool.name, tool_args={}), _llm_context()
+        )
+    assert not result.error
+    assert result.data["outfit"] is None
+    assert result.data["results"] == []
