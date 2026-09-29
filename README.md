@@ -1,6 +1,6 @@
 # Wardrowbe — Home Assistant integration
 
-> Requires Home Assistant **2026.10.0b0 or later**. LLM tools return `llm.ToolResult`, preserving existing response fields in `data`.
+> Requires Home Assistant **2026.10.0.dev202609290227 or later**. LLM tools return `llm.ToolResult`, preserving existing response fields in `data`.
 
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with%20Claude%20Code-D97757?style=for-the-badge&logo=claude&logoColor=white)](https://claude.ai/code)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-41BDF5?style=for-the-badge&logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)

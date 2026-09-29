@@ -2,7 +2,7 @@
 # Wire this checkout into the devcontainer's baked-in Home Assistant install.
 #
 # Use the official HA image from .devcontainer/devcontainer.json. Its
-# 2026.10.0b0 minimum matches hacs.json and provides the ToolResult API.
+# 2026.10.0.dev202609290227 minimum matches hacs.json and provides the ToolResult API.
 # HA and runtime dependencies are already installed; only dev tools are added.
 # Wardrowbe's phacc stack stays in its own .venv-test to avoid downgrading HA.
 set -euo pipefail

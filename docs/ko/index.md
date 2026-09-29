@@ -1,6 +1,6 @@
 # Wardrowbe — Home Assistant 통합
 
-> Home Assistant **2026.10.0b0 이상**이 필요합니다. LLM 도구는 `llm.ToolResult`를 반환하며 기존 응답 필드는 `data`에 유지됩니다.
+> Home Assistant **2026.10.0.dev202609290227 이상**이 필요합니다. LLM 도구는 `llm.ToolResult`를 반환하며 기존 응답 필드는 `data`에 유지됩니다.
 
 셀프호스팅 AI 옷장 관리자 [Wardrowbe](https://github.com/Anyesh/wardrowbe)용 Home Assistant 커스텀 컴포넌트. 옷장 분석, 아웃핏 수명주기, 알림 이력을 sensor·event 엔티티로 노출하고, 아웃핏/착용/세탁 액션을 서비스로 제공합니다.
 

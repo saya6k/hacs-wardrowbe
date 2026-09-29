@@ -1,7 +1,7 @@
 {
   "name": "Wardrowbe",
   "render_readme": true,
-  "homeassistant": "2026.10.0b0",
+  "homeassistant": "2026.10.0.dev202609290227",
   "country": ["KR", "US"],
   "zip_release": true,
   "filename": "wardrowbe.zip"
