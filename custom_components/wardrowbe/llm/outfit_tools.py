@@ -17,6 +17,10 @@ from .render import extract_image_url, outfit_to_results
 
 class SuggestOutfitTool(BaseWardrowbeTool):
     name = "suggest_outfit"
+    title = "Suggest outfit"
+    annotations = llm.ToolAnnotations(
+        read_only=False, destructive=False, idempotent=False, open_world=True
+    )
     description = (
         "Generate a new outfit recommendation from the wardrobe. Call this "
         "when the user asks what to wear, wants an outfit for an occasion, "
@@ -42,7 +46,7 @@ class SuggestOutfitTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None:
             return self.error("Wardrowbe is not loaded.")
@@ -73,6 +77,10 @@ class SuggestOutfitTool(BaseWardrowbeTool):
 
 class GetLatestOutfitTool(BaseWardrowbeTool):
     name = "get_latest_outfit"
+    title = "Get latest outfit"
+    annotations = llm.ToolAnnotations(
+        read_only=True, destructive=False, idempotent=True, open_world=False
+    )
     description = (
         "Return the single most recent outfit regardless of its status "
         "(pending, accepted, rejected, or skipped) and render its images. "
@@ -86,7 +94,7 @@ class GetLatestOutfitTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")
@@ -112,6 +120,10 @@ class GetLatestOutfitTool(BaseWardrowbeTool):
 
 class GetRecentOutfitsTool(BaseWardrowbeTool):
     name = "get_recent_outfits"
+    title = "Get recent outfits"
+    annotations = llm.ToolAnnotations(
+        read_only=True, destructive=False, idempotent=True, open_world=False
+    )
     description = (
         "List recent outfits as an image gallery, most recent first. Call "
         "this when the user wants to browse outfit history rather than "
@@ -133,7 +145,7 @@ class GetRecentOutfitsTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")
@@ -191,7 +203,7 @@ class _OutfitActionTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")
@@ -222,6 +234,10 @@ class _OutfitActionTool(BaseWardrowbeTool):
 
 class AcceptLatestOutfitTool(_OutfitActionTool):
     name = "accept_latest_outfit"
+    title = "Accept latest outfit"
+    annotations = llm.ToolAnnotations(
+        read_only=False, destructive=True, idempotent=False, open_world=True
+    )
     description = (
         "Mark the most recent pending outfit suggestion as accepted, "
         "meaning the user will wear it. Call this after suggest_outfit "
@@ -233,6 +249,10 @@ class AcceptLatestOutfitTool(_OutfitActionTool):
 
 class RejectLatestOutfitTool(_OutfitActionTool):
     name = "reject_latest_outfit"
+    title = "Reject latest outfit"
+    annotations = llm.ToolAnnotations(
+        read_only=False, destructive=True, idempotent=False, open_world=True
+    )
     description = (
         "Mark the most recent pending outfit suggestion as rejected, "
         "meaning the user does not want to wear it. Call this when the "
@@ -245,6 +265,10 @@ class RejectLatestOutfitTool(_OutfitActionTool):
 
 class SkipLatestOutfitTool(_OutfitActionTool):
     name = "skip_latest_outfit"
+    title = "Skip latest outfit"
+    annotations = llm.ToolAnnotations(
+        read_only=False, destructive=True, idempotent=False, open_world=True
+    )
     description = (
         "Mark the most recent pending outfit suggestion as skipped, "
         "meaning the user is deferring the decision without accepting or "

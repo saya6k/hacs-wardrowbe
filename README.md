@@ -1,5 +1,7 @@
 # Wardrowbe — Home Assistant integration
 
+> Requires Home Assistant **2026.10.0b0 or later**. LLM tools return `llm.ToolResult`, preserving existing response fields in `data`.
+
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with%20Claude%20Code-D97757?style=for-the-badge&logo=claude&logoColor=white)](https://claude.ai/code)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-41BDF5?style=for-the-badge&logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5?style=for-the-badge&logo=homeassistantcommunitystore&logoColor=white)](https://hacs.xyz/)
@@ -11,7 +13,6 @@
 
 A Home Assistant custom component for [Wardrowbe](https://github.com/Anyesh/wardrowbe), the self-hosted AI-powered wardrobe manager. Surfaces wardrobe analytics, outfit lifecycle, and notification history as sensors and event entities, and exposes outfit/wear/wash actions as services.
 
-> Requires Home Assistant **2026.8.0b0+** (Python 3.14 support; the opt-in LLM API needs the `llm` integration added in HA's 2026.8 cycle).
 
 ## Features
 

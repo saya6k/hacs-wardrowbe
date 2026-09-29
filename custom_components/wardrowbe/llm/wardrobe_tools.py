@@ -17,6 +17,10 @@ from .render import extract_image_url, svg_summary
 
 class GetWardrobeSummaryTool(BaseWardrowbeTool):
     name = "get_wardrobe_summary"
+    title = "Get wardrobe summary"
+    annotations = llm.ToolAnnotations(
+        read_only=True, destructive=False, idempotent=True, open_world=False
+    )
     description = (
         "Return overall wardrobe statistics: item counts by status "
         "(ready, processing, archived), total and recent outfit counts, "
@@ -32,7 +36,7 @@ class GetWardrobeSummaryTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")
@@ -76,6 +80,10 @@ class GetWardrobeSummaryTool(BaseWardrowbeTool):
 
 class GetMostWornItemsTool(BaseWardrowbeTool):
     name = "get_most_worn_items"
+    title = "Get most worn items"
+    annotations = llm.ToolAnnotations(
+        read_only=True, destructive=False, idempotent=True, open_world=False
+    )
     description = (
         "List the user's most-worn wardrobe items as an image gallery, "
         "ranked by wear count. Call this when the user asks what they "
@@ -91,7 +99,7 @@ class GetMostWornItemsTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")
@@ -133,6 +141,10 @@ class GetMostWornItemsTool(BaseWardrowbeTool):
 
 class GetItemsToWashTool(BaseWardrowbeTool):
     name = "get_items_to_wash"
+    title = "Get items to wash"
+    annotations = llm.ToolAnnotations(
+        read_only=True, destructive=False, idempotent=True, open_world=False
+    )
     description = (
         "List wardrobe items the server has flagged as needing a wash "
         "(needs_wash=true), as an image gallery with item ids. Call this "
@@ -149,7 +161,7 @@ class GetItemsToWashTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")
@@ -185,6 +197,10 @@ class GetItemsToWashTool(BaseWardrowbeTool):
 
 class LogWashTool(BaseWardrowbeTool):
     name = "log_wash"
+    title = "Log wash"
+    annotations = llm.ToolAnnotations(
+        read_only=False, destructive=True, idempotent=False, open_world=True
+    )
     description = (
         "Mark a wardrobe item as washed and reset its wear-since-wash "
         "counter. Call this when the user says they washed, cleaned, or "
@@ -205,7 +221,7 @@ class LogWashTool(BaseWardrowbeTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         runtime = self.runtime
         if runtime is None or runtime.coordinator.data is None:
             return self.error("Wardrowbe data is not ready.")

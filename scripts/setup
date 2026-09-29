@@ -1,21 +1,10 @@
 #!/usr/bin/env bash
 # Wire this checkout into the devcontainer's baked-in Home Assistant install.
 #
-# The devcontainer base image (see .devcontainer/devcontainer.json) is the
-# official home-assistant image, pinned to the 2026.8.0b0 beta and pulled from
-# ghcr.io (Docker Hub carries no 2026.8 beta tag). The image tag must match
-# hacs.json's `homeassistant` floor — one version string shared by the two.
-#
-# Unlike a generic Python devcontainer, the image already bundles HA core, the
-# frontend, and every native/runtime dependency default_config needs (ffmpeg,
-# go2rtc, PyTurboJPEG, aioesphomeapi, bleak, hassil, home-assistant-intents)
-# — so there is nothing to apt/apk here beyond the dev-only Python tools the
-# runtime image doesn't ship.
-#
-# tests/requirements_test.txt is deliberately NOT installed here: phacc pins
-# homeassistant==2026.7.4, so pulling it into the image's site-packages would
-# downgrade the 2026.8.0b0 core scripts/develop is here to run. Put it in its
-# own virtualenv instead (scripts/test does that for you).
+# Use the official HA image from .devcontainer/devcontainer.json. Its
+# 2026.10.0b0 minimum matches hacs.json and provides the ToolResult API.
+# HA and runtime dependencies are already installed; only dev tools are added.
+# Wardrowbe's phacc stack stays in its own .venv-test to avoid downgrading HA.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
