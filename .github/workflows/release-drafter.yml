@@ -63,13 +63,17 @@ jobs:
               core.info(`No Conventional-Commit prefix matched in title: "${title}"`);
               return;
             }
+            // A `!` before the colon (e.g. `feat!:`) marks a breaking change. It
+            // gets only the `breaking` label: release-drafter lists a PR under
+            // every category it matches, and it should appear there alone.
+            const labels = /^[a-z]+(\(.+\))?!:/i.test(title) ? ["breaking"] : [label];
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
-              labels: [label],
+              labels,
             });
-            core.info(`Added label "${label}" from title: "${title}"`);
+            core.info(`Added labels ${JSON.stringify(labels)} from title: "${title}"`);
 
   # No manifest.json sync here: the committed manifest stays at the latest
   # stable release, and release-zip.yml patches the authoritative version

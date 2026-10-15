@@ -16,6 +16,14 @@ prerelease-identifier: "rc"
 # shown in the release body; the titled entries below are the display
 # categories, both keyed off `when.labels` now instead of a bare `labels` list.
 categories:
+  # A `!` in a Conventional-Commit title (e.g. `feat!:`) gives the PR the
+  # `breaking` label instead of its type label. Below 1.0 a breaking change
+  # bumps the minor version like a feature; switch this entry to "major" once
+  # the integration reaches 1.0.
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      labels: ["breaking"]
   - type: "version-resolver"
     semver-increment: "minor"
     when:
@@ -26,6 +34,11 @@ categories:
       labels: ["bug", "fix", "chore", "dependencies", "ci"]
   - type: "version-resolver"
     semver-increment: "patch"
+  # A PR is listed under every category it matches, so a breaking PR carries
+  # only the `breaking` label (not its type label) to appear here alone.
+  - title: "⚠️ Breaking changes"
+    when:
+      labels: ["breaking"]
   - title: "New Features"
     when:
       labels: ["enhancement", "feature"]
