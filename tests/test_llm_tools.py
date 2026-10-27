@@ -111,16 +111,16 @@ async def test_hook_returns_tool_set_for_loaded_entry_none_after_unload(
     result = async_get_tools(hass, llm_context, api_id)
     assert result is not None
     assert {tool.name for tool in result.tools} == {
-        "suggest_outfit",
-        "get_latest_outfit",
-        "get_recent_outfits",
-        "accept_latest_outfit",
-        "reject_latest_outfit",
-        "skip_latest_outfit",
-        "get_wardrobe_summary",
-        "get_most_worn_items",
-        "get_items_to_wash",
-        "log_wash",
+        "wardrowbe__suggest_outfit",
+        "wardrowbe__get_latest_outfit",
+        "wardrowbe__get_recent_outfits",
+        "wardrowbe__accept_latest_outfit",
+        "wardrowbe__reject_latest_outfit",
+        "wardrowbe__skip_latest_outfit",
+        "wardrowbe__get_wardrobe_summary",
+        "wardrowbe__get_most_worn_items",
+        "wardrowbe__get_items_to_wash",
+        "wardrowbe__log_wash",
     }
 
     assert await hass.config_entries.async_unload(dev_mode_entry.entry_id)
@@ -196,9 +196,11 @@ async def test_tool_metadata_distinguishes_reads_and_writes(hass: HomeAssistant)
         tool = factory(hass, "test-entry")
         assert tool.integration == DOMAIN
         assert tool.title
-        assert tool.annotations.read_only == tool.name.startswith("get_")
-        assert tool.annotations.open_world == (not tool.name.startswith("get_"))
-        if not tool.name.startswith("get_"):
+        assert tool.name.startswith(f"{DOMAIN}__")
+        is_read = tool.name.startswith(f"{DOMAIN}__get_")
+        assert tool.annotations.read_only == is_read
+        assert tool.annotations.open_world == (not is_read)
+        if not is_read:
             assert not tool.annotations.idempotent
 
 

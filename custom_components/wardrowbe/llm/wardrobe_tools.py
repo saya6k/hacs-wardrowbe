@@ -16,7 +16,7 @@ from .render import extract_image_url, svg_summary
 
 
 class GetWardrobeSummaryTool(BaseWardrowbeTool):
-    name = "get_wardrobe_summary"
+    name = "wardrowbe__get_wardrobe_summary"
     title = "Get wardrobe summary"
     annotations = llm.ToolAnnotations(
         read_only=True, destructive=False, idempotent=True, open_world=False
@@ -79,7 +79,7 @@ class GetWardrobeSummaryTool(BaseWardrowbeTool):
 
 
 class GetMostWornItemsTool(BaseWardrowbeTool):
-    name = "get_most_worn_items"
+    name = "wardrowbe__get_most_worn_items"
     title = "Get most worn items"
     annotations = llm.ToolAnnotations(
         read_only=True, destructive=False, idempotent=True, open_world=False
@@ -140,7 +140,7 @@ class GetMostWornItemsTool(BaseWardrowbeTool):
 
 
 class GetItemsToWashTool(BaseWardrowbeTool):
-    name = "get_items_to_wash"
+    name = "wardrowbe__get_items_to_wash"
     title = "Get items to wash"
     annotations = llm.ToolAnnotations(
         read_only=True, destructive=False, idempotent=True, open_world=False
@@ -149,7 +149,7 @@ class GetItemsToWashTool(BaseWardrowbeTool):
         "List wardrobe items the server has flagged as needing a wash "
         "(needs_wash=true), as an image gallery with item ids. Call this "
         "when the user asks what needs washing or laundry. Optional "
-        "limit (1-20, default 8). Use the returned item_id with log_wash "
+        "limit (1-20, default 8). Use the returned item_id with wardrowbe__log_wash "
         "once the user says they've washed something."
     )
     parameters = vol.Schema(
@@ -196,7 +196,7 @@ class GetItemsToWashTool(BaseWardrowbeTool):
 
 
 class LogWashTool(BaseWardrowbeTool):
-    name = "log_wash"
+    name = "wardrowbe__log_wash"
     title = "Log wash"
     annotations = llm.ToolAnnotations(
         read_only=False, destructive=True, idempotent=False, open_world=True
@@ -205,7 +205,7 @@ class LogWashTool(BaseWardrowbeTool):
         "Mark a wardrobe item as washed and reset its wear-since-wash "
         "counter. Call this when the user says they washed, cleaned, or "
         "laundered an item. Pass item_id (preferred, e.g. from "
-        "get_items_to_wash) or item_name to match by name against the "
+        "wardrowbe__get_items_to_wash) or item_name to match by name against the "
         "current items-to-wash list. Fails if neither is given or no "
         "match is found."
     )

@@ -16,7 +16,7 @@ from .render import extract_image_url, outfit_to_results
 
 
 class SuggestOutfitTool(BaseWardrowbeTool):
-    name = "suggest_outfit"
+    name = "wardrowbe__suggest_outfit"
     title = "Suggest outfit"
     annotations = llm.ToolAnnotations(
         read_only=False, destructive=False, idempotent=False, open_world=True
@@ -29,8 +29,8 @@ class SuggestOutfitTool(BaseWardrowbeTool):
         "casual, formal), time_of_day, target_date (YYYY-MM-DD, defaults "
         "to today), and free-text notes (e.g. 'it's raining', 'meeting a "
         "client'). Produces a pending outfit; follow up with "
-        "accept_latest_outfit, reject_latest_outfit, or "
-        "skip_latest_outfit once the user reacts to it."
+        "wardrowbe__accept_latest_outfit, wardrowbe__reject_latest_outfit, or "
+        "wardrowbe__skip_latest_outfit once the user reacts to it."
     )
     parameters = vol.Schema(
         {
@@ -76,7 +76,7 @@ class SuggestOutfitTool(BaseWardrowbeTool):
 
 
 class GetLatestOutfitTool(BaseWardrowbeTool):
-    name = "get_latest_outfit"
+    name = "wardrowbe__get_latest_outfit"
     title = "Get latest outfit"
     annotations = llm.ToolAnnotations(
         read_only=True, destructive=False, idempotent=True, open_world=False
@@ -119,7 +119,7 @@ class GetLatestOutfitTool(BaseWardrowbeTool):
 
 
 class GetRecentOutfitsTool(BaseWardrowbeTool):
-    name = "get_recent_outfits"
+    name = "wardrowbe__get_recent_outfits"
     title = "Get recent outfits"
     annotations = llm.ToolAnnotations(
         read_only=True, destructive=False, idempotent=True, open_world=False
@@ -233,14 +233,14 @@ class _OutfitActionTool(BaseWardrowbeTool):
 
 
 class AcceptLatestOutfitTool(_OutfitActionTool):
-    name = "accept_latest_outfit"
+    name = "wardrowbe__accept_latest_outfit"
     title = "Accept latest outfit"
     annotations = llm.ToolAnnotations(
         read_only=False, destructive=True, idempotent=False, open_world=True
     )
     description = (
         "Mark the most recent pending outfit suggestion as accepted, "
-        "meaning the user will wear it. Call this after suggest_outfit "
+        "meaning the user will wear it. Call this after wardrowbe__suggest_outfit "
         "has produced a pending outfit and the user confirms they like "
         "it. Fails if there is no pending outfit."
     )
@@ -248,7 +248,7 @@ class AcceptLatestOutfitTool(_OutfitActionTool):
 
 
 class RejectLatestOutfitTool(_OutfitActionTool):
-    name = "reject_latest_outfit"
+    name = "wardrowbe__reject_latest_outfit"
     title = "Reject latest outfit"
     annotations = llm.ToolAnnotations(
         read_only=False, destructive=True, idempotent=False, open_world=True
@@ -256,7 +256,7 @@ class RejectLatestOutfitTool(_OutfitActionTool):
     description = (
         "Mark the most recent pending outfit suggestion as rejected, "
         "meaning the user does not want to wear it. Call this when the "
-        "user dislikes the suggestion; consider calling suggest_outfit "
+        "user dislikes the suggestion; consider calling wardrowbe__suggest_outfit "
         "again afterwards for a new option. Fails if there is no pending "
         "outfit."
     )
@@ -264,7 +264,7 @@ class RejectLatestOutfitTool(_OutfitActionTool):
 
 
 class SkipLatestOutfitTool(_OutfitActionTool):
-    name = "skip_latest_outfit"
+    name = "wardrowbe__skip_latest_outfit"
     title = "Skip latest outfit"
     annotations = llm.ToolAnnotations(
         read_only=False, destructive=True, idempotent=False, open_world=True
