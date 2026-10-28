@@ -13,7 +13,6 @@
 # Tracked top-level files
 !/.gitattributes
 !/.gitignore
-!/CHANGELOG.md
 !/LICENSE
 !/README.md
 !/hacs.json
