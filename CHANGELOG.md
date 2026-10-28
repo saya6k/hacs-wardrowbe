@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- Declare integration categories in the manifest.
 - Require Home Assistant 2026.10.0.dev202609290227 or later.
 - Migrate LLM tools to ToolResult with explicit failure flags and tool metadata, preserving existing response payloads.
 
