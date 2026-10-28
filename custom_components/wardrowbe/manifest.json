@@ -1,6 +1,9 @@
 {
   "domain": "wardrowbe",
   "name": "Wardrowbe",
+  "categories": [
+    "productivity_information"
+  ],
   "codeowners": [
     "@saya6k"
   ],
